@@ -1,0 +1,222 @@
+{
+  "snapshot_at_utc": "2026-10-11T03:57:49.085774+00:00",
+  "files": [
+    {
+      "path": "SKILL.md",
+      "bytes": 10055,
+      "sha256": "0e152dd499d424f148ea143036e1a08fab201c41ed7feb99bde42be682bc79b3",
+      "modified_at_utc": "2026-10-07T19:46:09.169535+00:00",
+      "shared_sha256": "b88f476bc6467a0e059b952a670b5c974627d1f45c14cfcc7294a529c67cda98",
+      "modified_for_sharing": true
+    },
+    {
+      "path": "agents/openai.yaml",
+      "bytes": 499,
+      "sha256": "5477f30724c9bb12ea015155c5ffa4c76138c0c539174dc467e066d7f9a7ef23",
+      "modified_at_utc": "2026-10-04T02:10:59.611821+00:00",
+      "shared_sha256": "5477f30724c9bb12ea015155c5ffa4c76138c0c539174dc467e066d7f9a7ef23",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "assets/editorial.css",
+      "bytes": 14224,
+      "sha256": "19ff96d00dd7456da38d0bbdb19e057059921fac780b7195f3f0d34cb357df2a",
+      "modified_at_utc": "2026-10-07T19:51:12.376727+00:00",
+      "shared_sha256": "19ff96d00dd7456da38d0bbdb19e057059921fac780b7195f3f0d34cb357df2a",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "assets/editorial.html",
+      "bytes": 1153,
+      "sha256": "a7cb83601a48417c1adce8a0aceb88b6887f5d55fb0919237448325f3d64f7f6",
+      "modified_at_utc": "2026-10-07T19:38:01.443660+00:00",
+      "shared_sha256": "a7cb83601a48417c1adce8a0aceb88b6887f5d55fb0919237448325f3d64f7f6",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "assets/editorial.js",
+      "bytes": 1927,
+      "sha256": "e53d177b7ba77871aeb4e89f8f8857cecb17ded0177d074420c47544e2cc318a",
+      "modified_at_utc": "2026-10-07T19:38:01.471664+00:00",
+      "shared_sha256": "e53d177b7ba77871aeb4e89f8f8857cecb17ded0177d074420c47544e2cc318a",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "assets/template.html",
+      "bytes": 2804,
+      "sha256": "4e7715e38f0530897e2d882f4d75e1d64dbff859fbc95ddfb0dfa88668f9b693",
+      "modified_at_utc": "2026-10-04T00:54:12.048615+00:00",
+      "shared_sha256": "4e7715e38f0530897e2d882f4d75e1d64dbff859fbc95ddfb0dfa88668f9b693",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "references/batch-recovery.md",
+      "bytes": 5754,
+      "sha256": "5a371a1817442cf14bee663fc959d81d890f1411f7a1f33b0299e9ae1f0b7109",
+      "modified_at_utc": "2026-10-04T07:43:19.892036+00:00",
+      "shared_sha256": "5a371a1817442cf14bee663fc959d81d890f1411f7a1f33b0299e9ae1f0b7109",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "references/contract.md",
+      "bytes": 6787,
+      "sha256": "944a51e032f1ea6867ce27195e7f6ca4c58f6ccd0dd1f6cfcd5ea5aac65c84ee",
+      "modified_at_utc": "2026-10-07T19:46:09.169789+00:00",
+      "shared_sha256": "944a51e032f1ea6867ce27195e7f6ca4c58f6ccd0dd1f6cfcd5ea5aac65c84ee",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "references/editorial-layout.md",
+      "bytes": 6692,
+      "sha256": "ce1f0f7ea8fe54e9cd700d5069d1ee3e746270a591642663501c399be3efa40a",
+      "modified_at_utc": "2026-10-07T19:46:09.144719+00:00",
+      "shared_sha256": "ce1f0f7ea8fe54e9cd700d5069d1ee3e746270a591642663501c399be3efa40a",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "references/lessons.json",
+      "bytes": 4272,
+      "sha256": "f0db3c95fda82485158fe5f8a98f2c5afa6ea4df5e761b92031ce78411956fbb",
+      "modified_at_utc": "2026-10-07T19:57:32.097651+00:00",
+      "shared_sha256": "56aadfefb8428b7a5cfa673943c816e1c5e1b0d1e74cb150570c4fc67c5fcf72",
+      "modified_for_sharing": true
+    },
+    {
+      "path": "references/quality-delivery.md",
+      "bytes": 8126,
+      "sha256": "0d1490301417766b2341478036cffe35bb0b4f9b66b5d9e12a252a45851df7f6",
+      "modified_at_utc": "2026-10-07T19:46:09.170095+00:00",
+      "shared_sha256": "55547f932e0fb4373189ad6f86e89e6f386af691e04ce984a12d7b1e51b65fe5",
+      "modified_for_sharing": true
+    },
+    {
+      "path": "references/reading-materials.md",
+      "bytes": 9662,
+      "sha256": "51b513ac578a5d4ac77239929a43e9f794b06715caffab194bcf5ab279c9a442",
+      "modified_at_utc": "2026-10-07T19:46:09.169939+00:00",
+      "shared_sha256": "51b513ac578a5d4ac77239929a43e9f794b06715caffab194bcf5ab279c9a442",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "references/traceability.md",
+      "bytes": 9548,
+      "sha256": "01f489faf7de4ce6edc15f7c4cd54cb516e8d397e158b5ce16848706e099db2e",
+      "modified_at_utc": "2026-10-02T14:57:28.360065+00:00",
+      "shared_sha256": "01f489faf7de4ce6edc15f7c4cd54cb516e8d397e158b5ce16848706e099db2e",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "references/visual-coverage.md",
+      "bytes": 4259,
+      "sha256": "118a4ff31a8a3ed0815b0cc5764b92df1730158d074590487887d2e321d254c3",
+      "modified_at_utc": "2026-10-04T00:07:19.763797+00:00",
+      "shared_sha256": "118a4ff31a8a3ed0815b0cc5764b92df1730158d074590487887d2e321d254c3",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/course_notes.py",
+      "bytes": 16071,
+      "sha256": "1de4abde3012dcd8024916baa92fba751ace4ac1d8b3569170d689ed80d77b0a",
+      "modified_at_utc": "2026-10-07T19:38:01.392378+00:00",
+      "shared_sha256": "1de4abde3012dcd8024916baa92fba751ace4ac1d8b3569170d689ed80d77b0a",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/reading_layout.py",
+      "bytes": 12373,
+      "sha256": "9a2ae167fdbab5d1a391d69f148d8976522d2e83627008d50b4c1ba84adb6744",
+      "modified_at_utc": "2026-10-07T19:52:09.680724+00:00",
+      "shared_sha256": "9a2ae167fdbab5d1a391d69f148d8976522d2e83627008d50b4c1ba84adb6744",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/test_course_notes.py",
+      "bytes": 7243,
+      "sha256": "2d2daaddd9ddc3483c918372c7bfeee8c088a066d1e77a045600ecfde31afea7",
+      "modified_at_utc": "2026-10-01T14:32:29.581413+00:00",
+      "shared_sha256": "2d2daaddd9ddc3483c918372c7bfeee8c088a066d1e77a045600ecfde31afea7",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/test_reading_layout.py",
+      "bytes": 6215,
+      "sha256": "0808d920bfc82eed1d9b0e9d98c030d981a9b96d0afd3230c8724c04fe9eba63",
+      "modified_at_utc": "2026-10-07T19:52:09.699993+00:00",
+      "shared_sha256": "0808d920bfc82eed1d9b0e9d98c030d981a9b96d0afd3230c8724c04fe9eba63",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/test_trace_artifacts.py",
+      "bytes": 4468,
+      "sha256": "904525e40cf4c38616bf40e24088a2999862a6d6dce1087e80285391b51db461",
+      "modified_at_utc": "2026-10-02T14:57:28.361188+00:00",
+      "shared_sha256": "904525e40cf4c38616bf40e24088a2999862a6d6dce1087e80285391b51db461",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/test_validate_image_audit.py",
+      "bytes": 3672,
+      "sha256": "2fb89efb74a250ca611a127171094df16acfb2a68c73d05ac5f8c8f0de164313",
+      "modified_at_utc": "2026-10-02T08:50:58.669903+00:00",
+      "shared_sha256": "2fb89efb74a250ca611a127171094df16acfb2a68c73d05ac5f8c8f0de164313",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/test_validate_materials.py",
+      "bytes": 6664,
+      "sha256": "9ec42aad6f18a6f5c5f0746ad787a7ad6af6d362d73eaada3fdbe2ff8a237446",
+      "modified_at_utc": "2026-10-04T07:21:19.840359+00:00",
+      "shared_sha256": "9ec42aad6f18a6f5c5f0746ad787a7ad6af6d362d73eaada3fdbe2ff8a237446",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/test_validate_visual_coverage.py",
+      "bytes": 3165,
+      "sha256": "8fe46ab1e1d245cb360c9d2a98a23feedeb7cd0a5231d62ebec98c23445598ae",
+      "modified_at_utc": "2026-10-04T00:07:19.778777+00:00",
+      "shared_sha256": "8fe46ab1e1d245cb360c9d2a98a23feedeb7cd0a5231d62ebec98c23445598ae",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/trace_artifacts.py",
+      "bytes": 6167,
+      "sha256": "78d11196269b91cc67a3c0a9b21900c39710b70c01d375d99df2eeb93dbe4be5",
+      "modified_at_utc": "2026-10-02T14:57:28.361620+00:00",
+      "shared_sha256": "78d11196269b91cc67a3c0a9b21900c39710b70c01d375d99df2eeb93dbe4be5",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/validate_image_audit.py",
+      "bytes": 4223,
+      "sha256": "15ff44c879f1430399a0d53d24a359f0256ac36dfe24c48e989fb7144b46df99",
+      "modified_at_utc": "2026-10-02T08:50:58.648344+00:00",
+      "shared_sha256": "15ff44c879f1430399a0d53d24a359f0256ac36dfe24c48e989fb7144b46df99",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/validate_materials.py",
+      "bytes": 6810,
+      "sha256": "5478fe55b0135a5600988f87916cd2b4f53f8e0b0cab71b12fa0a2361dd13ba5",
+      "modified_at_utc": "2026-10-04T07:21:19.838010+00:00",
+      "shared_sha256": "5478fe55b0135a5600988f87916cd2b4f53f8e0b0cab71b12fa0a2361dd13ba5",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/validate_reading_layout.py",
+      "bytes": 774,
+      "sha256": "299dfb32ca01f1ce84ee909d66a3d00d905a4c79d319c042a0534975571bcc30",
+      "modified_at_utc": "2026-10-07T19:38:01.491881+00:00",
+      "shared_sha256": "299dfb32ca01f1ce84ee909d66a3d00d905a4c79d319c042a0534975571bcc30",
+      "modified_for_sharing": false
+    },
+    {
+      "path": "scripts/validate_visual_coverage.py",
+      "bytes": 6894,
+      "sha256": "3d060f295730cff57aa1b3990197b8279a9c700ca5f1c038bfba9d64032f8abd",
+      "modified_at_utc": "2026-10-04T00:07:19.776766+00:00",
+      "shared_sha256": "3d060f295730cff57aa1b3990197b8279a9c700ca5f1c038bfba9d64032f8abd",
+      "modified_for_sharing": false
+    }
+  ],
+  "note": "Current local Skill snapshot; no semantic version declared. Hashes identify source bytes, not a license grant."
+}

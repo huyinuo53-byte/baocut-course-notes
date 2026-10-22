@@ -1,0 +1,260 @@
+{
+  "generated_at": "2026-10-22",
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 76,
+      "sha256": "dbc8eededc1452cf0a5721e63fcb103fbfba8f0e2b0f69fec0e858b3fc7ae480"
+    },
+    {
+      "path": "README.md",
+      "bytes": 8432,
+      "sha256": "90795c5f0871f592250d5f9f0f0bfc298c3ff1d925fa3e2ec2c4df4ba2a2b399"
+    },
+    {
+      "path": "docs/agent-setup.md",
+      "bytes": 12278,
+      "sha256": "1b78f5a7fba95d03542404aa68d3985d8a0fa1b31222204248dbc864643d99e2"
+    },
+    {
+      "path": "docs/course-manifest.json",
+      "bytes": 1032,
+      "sha256": "dff14e3919902bb3b8c30cabb6112247e33e1363eea25cca3035f1427ec41ade"
+    },
+    {
+      "path": "docs/dependencies.md",
+      "bytes": 4502,
+      "sha256": "0eb58c5c6906642df1bdcd5fd0219d72749c95d35bbcd957217abe2f5b195a51"
+    },
+    {
+      "path": "docs/image-scan.json",
+      "bytes": 63,
+      "sha256": "f0ace58023b47fde8fc90039721aeeb84e8cf10fea8b41f41fb6aeaf346dbeca"
+    },
+    {
+      "path": "docs/page-checks.json",
+      "bytes": 4580,
+      "sha256": "d6e16fec1b55c68f5ce32fd2630fce6d73fc3c484733837a90f0aea5c37881da"
+    },
+    {
+      "path": "docs/release-validation.md",
+      "bytes": 2515,
+      "sha256": "c6d0e38f7f7a8c4945b191bb07688e018e953b16da87f67bb7cd768685134c16"
+    },
+    {
+      "path": "docs/source-manifest.json",
+      "bytes": 9675,
+      "sha256": "2a8129bdc14673bd1fac636606d97a8ee3c36d58eb11a0199ff418e378567fda"
+    },
+    {
+      "path": "docs/validation.md",
+      "bytes": 4460,
+      "sha256": "410ae5461697f35177a03303303c86713203051f31de4107e58aeb89057b311a"
+    },
+    {
+      "path": "examples/synthetic/notes.json",
+      "bytes": 2799,
+      "sha256": "c5624b16291f5b8b4a5aecfd663f68f51b09277839badfcd3fee05252f7950c5"
+    },
+    {
+      "path": "examples/synthetic/preview.html",
+      "bytes": 28949,
+      "sha256": "f6edd98cb4770757f940517af168f8ce6dd0442d5c5c3f9a60ff57deb0f7b8d3"
+    },
+    {
+      "path": "examples/synthetic/reading-layout.json",
+      "bytes": 999,
+      "sha256": "6dee9e9156def03a0fdbf8f8f006373b5222d9751467edb5f1f96ab4d683570b"
+    },
+    {
+      "path": "examples/synthetic/synthetic-frame.png",
+      "bytes": 4625,
+      "sha256": "4bfe2d16fd4b3856addab3cf092f9e31e16117318217ca53b5eb5682bd176424"
+    },
+    {
+      "path": "examples/synthetic/transcript.json",
+      "bytes": 733,
+      "sha256": "c2d1d79d172db00b9639fc918f4054de7606ec6ffabce7fec43285776e40dc54"
+    },
+    {
+      "path": "notes/lecture-01/课堂笔记.html",
+      "bytes": 5525853,
+      "sha256": "02fea432e58cc3402250a9233121d514c33c26195ec2d192ce83bb3cb1275ecd"
+    },
+    {
+      "path": "notes/lecture-02/课堂笔记.html",
+      "bytes": 6535563,
+      "sha256": "21fdb6a9e25c0cc55bc9d532aa651cfde2e18496ed93f5f7db40e55fce999ff4"
+    },
+    {
+      "path": "notes/lecture-03/课堂笔记.html",
+      "bytes": 4049549,
+      "sha256": "6a92b10649cc3168260d00ce19f366ed0466146ec4211f27cfaf22cdff7a1265"
+    },
+    {
+      "path": "notes/lecture-04/课堂笔记.html",
+      "bytes": 4764230,
+      "sha256": "6dff239a91d90e6c67b27c1fc8a6797ee0b5366e7a3fa5cc57d456ce156e3709"
+    },
+    {
+      "path": "notes/lecture-05/课堂笔记.html",
+      "bytes": 4752116,
+      "sha256": "b2c79edb240152ca03c5bf83d8ef2452f6448db10efeb90bbec74de8040e90f5"
+    },
+    {
+      "path": "notes/课程导航.html",
+      "bytes": 7216,
+      "sha256": "bf7b7aae733a5df6413b9f2e0d476be7c570851439f03d24dc024314d8bf1231"
+    },
+    {
+      "path": "skills/baocut-course-notes/SKILL.md",
+      "bytes": 10870,
+      "sha256": "b88f476bc6467a0e059b952a670b5c974627d1f45c14cfcc7294a529c67cda98"
+    },
+    {
+      "path": "skills/baocut-course-notes/agents/openai.yaml",
+      "bytes": 499,
+      "sha256": "5477f30724c9bb12ea015155c5ffa4c76138c0c539174dc467e066d7f9a7ef23"
+    },
+    {
+      "path": "skills/baocut-course-notes/assets/editorial.css",
+      "bytes": 14224,
+      "sha256": "19ff96d00dd7456da38d0bbdb19e057059921fac780b7195f3f0d34cb357df2a"
+    },
+    {
+      "path": "skills/baocut-course-notes/assets/editorial.html",
+      "bytes": 1153,
+      "sha256": "a7cb83601a48417c1adce8a0aceb88b6887f5d55fb0919237448325f3d64f7f6"
+    },
+    {
+      "path": "skills/baocut-course-notes/assets/editorial.js",
+      "bytes": 1927,
+      "sha256": "e53d177b7ba77871aeb4e89f8f8857cecb17ded0177d074420c47544e2cc318a"
+    },
+    {
+      "path": "skills/baocut-course-notes/assets/template.html",
+      "bytes": 2804,
+      "sha256": "4e7715e38f0530897e2d882f4d75e1d64dbff859fbc95ddfb0dfa88668f9b693"
+    },
+    {
+      "path": "skills/baocut-course-notes/references/batch-recovery.md",
+      "bytes": 5754,
+      "sha256": "5a371a1817442cf14bee663fc959d81d890f1411f7a1f33b0299e9ae1f0b7109"
+    },
+    {
+      "path": "skills/baocut-course-notes/references/contract.md",
+      "bytes": 6787,
+      "sha256": "944a51e032f1ea6867ce27195e7f6ca4c58f6ccd0dd1f6cfcd5ea5aac65c84ee"
+    },
+    {
+      "path": "skills/baocut-course-notes/references/editorial-layout.md",
+      "bytes": 6692,
+      "sha256": "ce1f0f7ea8fe54e9cd700d5069d1ee3e746270a591642663501c399be3efa40a"
+    },
+    {
+      "path": "skills/baocut-course-notes/references/lessons.json",
+      "bytes": 4124,
+      "sha256": "56aadfefb8428b7a5cfa673943c816e1c5e1b0d1e74cb150570c4fc67c5fcf72"
+    },
+    {
+      "path": "skills/baocut-course-notes/references/quality-delivery.md",
+      "bytes": 8177,
+      "sha256": "55547f932e0fb4373189ad6f86e89e6f386af691e04ce984a12d7b1e51b65fe5"
+    },
+    {
+      "path": "skills/baocut-course-notes/references/reading-materials.md",
+      "bytes": 9662,
+      "sha256": "51b513ac578a5d4ac77239929a43e9f794b06715caffab194bcf5ab279c9a442"
+    },
+    {
+      "path": "skills/baocut-course-notes/references/traceability.md",
+      "bytes": 9548,
+      "sha256": "01f489faf7de4ce6edc15f7c4cd54cb516e8d397e158b5ce16848706e099db2e"
+    },
+    {
+      "path": "skills/baocut-course-notes/references/visual-coverage.md",
+      "bytes": 4259,
+      "sha256": "118a4ff31a8a3ed0815b0cc5764b92df1730158d074590487887d2e321d254c3"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/course_notes.py",
+      "bytes": 16071,
+      "sha256": "1de4abde3012dcd8024916baa92fba751ace4ac1d8b3569170d689ed80d77b0a"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/reading_layout.py",
+      "bytes": 12373,
+      "sha256": "9a2ae167fdbab5d1a391d69f148d8976522d2e83627008d50b4c1ba84adb6744"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/test_course_notes.py",
+      "bytes": 7243,
+      "sha256": "2d2daaddd9ddc3483c918372c7bfeee8c088a066d1e77a045600ecfde31afea7"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/test_reading_layout.py",
+      "bytes": 6215,
+      "sha256": "0808d920bfc82eed1d9b0e9d98c030d981a9b96d0afd3230c8724c04fe9eba63"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/test_trace_artifacts.py",
+      "bytes": 4468,
+      "sha256": "904525e40cf4c38616bf40e24088a2999862a6d6dce1087e80285391b51db461"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/test_validate_image_audit.py",
+      "bytes": 3672,
+      "sha256": "2fb89efb74a250ca611a127171094df16acfb2a68c73d05ac5f8c8f0de164313"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/test_validate_materials.py",
+      "bytes": 6664,
+      "sha256": "9ec42aad6f18a6f5c5f0746ad787a7ad6af6d362d73eaada3fdbe2ff8a237446"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/test_validate_visual_coverage.py",
+      "bytes": 3165,
+      "sha256": "8fe46ab1e1d245cb360c9d2a98a23feedeb7cd0a5231d62ebec98c23445598ae"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/trace_artifacts.py",
+      "bytes": 6167,
+      "sha256": "78d11196269b91cc67a3c0a9b21900c39710b70c01d375d99df2eeb93dbe4be5"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/validate_image_audit.py",
+      "bytes": 4223,
+      "sha256": "15ff44c879f1430399a0d53d24a359f0256ac36dfe24c48e989fb7144b46df99"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/validate_materials.py",
+      "bytes": 6810,
+      "sha256": "5478fe55b0135a5600988f87916cd2b4f53f8e0b0cab71b12fa0a2361dd13ba5"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/validate_reading_layout.py",
+      "bytes": 774,
+      "sha256": "299dfb32ca01f1ce84ee909d66a3d00d905a4c79d319c042a0534975571bcc30"
+    },
+    {
+      "path": "skills/baocut-course-notes/scripts/validate_visual_coverage.py",
+      "bytes": 6894,
+      "sha256": "3d060f295730cff57aa1b3990197b8279a9c700ca5f1c038bfba9d64032f8abd"
+    },
+    {
+      "path": "tools/install_skill.py",
+      "bytes": 1224,
+      "sha256": "8886dd684d87bcfe920a068da482dbae14f697a250fdc134d165fb7fc5e46aab"
+    },
+    {
+      "path": "tools/run_demo.py",
+      "bytes": 1696,
+      "sha256": "616e4f3e86ebcdc3a60e996596926ead967ca859a2fc5eb08512e5965d6da3e8"
+    },
+    {
+      "path": "tools/verify_package.py",
+      "bytes": 1338,
+      "sha256": "8e01c54b53233ca62235dd3d4aa308a6abd4ab0f396e91c558b69ca94eb5a904"
+    }
+  ]
+}

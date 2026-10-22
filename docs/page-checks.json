@@ -1,0 +1,159 @@
+{
+  "static": {
+    "pages": [
+      {
+        "path": "notes/lecture-01/课堂笔记.html",
+        "decoded_images": 32,
+        "links": 40
+      },
+      {
+        "path": "notes/lecture-02/课堂笔记.html",
+        "decoded_images": 33,
+        "links": 58
+      },
+      {
+        "path": "notes/lecture-03/课堂笔记.html",
+        "decoded_images": 18,
+        "links": 40
+      },
+      {
+        "path": "notes/lecture-04/课堂笔记.html",
+        "decoded_images": 21,
+        "links": 50
+      },
+      {
+        "path": "notes/lecture-05/课堂笔记.html",
+        "decoded_images": 25,
+        "links": 53
+      },
+      {
+        "path": "notes/课程导航.html",
+        "decoded_images": 0,
+        "links": 21
+      }
+    ],
+    "link_issues": [],
+    "privacy_pattern_findings": [],
+    "scan_boundary": "Regex text scan plus embedded image decoding, not visual OCR or a guarantee against unknown secrets. Fresh repository only; no historic commits imported."
+  },
+  "browser": [
+    {
+      "page": "notes/lecture-01/课堂笔记.html",
+      "width": 1440,
+      "title": "麦田美股交易入门到实战 · 第1课：从概率世界到行业工作台",
+      "images": 32,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-02/课堂笔记.html",
+      "width": 1440,
+      "title": "麦田美股交易入门到实战 · 第2课：择时、个股比较与期权结构",
+      "images": 33,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-03/课堂笔记.html",
+      "width": 1440,
+      "title": "麦田美股交易入门到实战 · 第3课：策略、技术指标与时间框架",
+      "images": 18,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-04/课堂笔记.html",
+      "width": 1440,
+      "title": "麦田美股交易入门到实战 · 第4课：仓位管理与非对称风险",
+      "images": 21,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-05/课堂笔记.html",
+      "width": 1440,
+      "title": "麦田美股交易入门到实战 · 第5课：工具、日常流程与历史仓位案例",
+      "images": 25,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/课程导航.html",
+      "width": 1440,
+      "title": "麦田 · 美股交易入门到实战｜五课完整笔记",
+      "images": 0,
+      "overflow": false,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-01/课堂笔记.html",
+      "width": 390,
+      "title": "麦田美股交易入门到实战 · 第1课：从概率世界到行业工作台",
+      "images": 32,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-02/课堂笔记.html",
+      "width": 390,
+      "title": "麦田美股交易入门到实战 · 第2课：择时、个股比较与期权结构",
+      "images": 33,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-03/课堂笔记.html",
+      "width": 390,
+      "title": "麦田美股交易入门到实战 · 第3课：策略、技术指标与时间框架",
+      "images": 18,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-04/课堂笔记.html",
+      "width": 390,
+      "title": "麦田美股交易入门到实战 · 第4课：仓位管理与非对称风险",
+      "images": 21,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/lecture-05/课堂笔记.html",
+      "width": 390,
+      "title": "麦田美股交易入门到实战 · 第5课：工具、日常流程与历史仓位案例",
+      "images": 25,
+      "overflow": false,
+      "dialog_open": true,
+      "errors": [],
+      "external_requests": 0
+    },
+    {
+      "page": "notes/课程导航.html",
+      "width": 390,
+      "title": "麦田 · 美股交易入门到实战｜五课完整笔记",
+      "images": 0,
+      "overflow": false,
+      "errors": [],
+      "external_requests": 0
+    }
+  ]
+}
