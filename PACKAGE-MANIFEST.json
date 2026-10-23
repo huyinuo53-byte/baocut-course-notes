@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-22",
+  "generated_at": "2026-10-23",
   "files": [
     {
       "path": ".gitignore",
@@ -7,14 +7,19 @@
       "sha256": "dbc8eededc1452cf0a5721e63fcb103fbfba8f0e2b0f69fec0e858b3fc7ae480"
     },
     {
+      "path": "LICENSE",
+      "bytes": 1065,
+      "sha256": "1877702ec5f74d4dcf1ce19b2f30702fe600309659ba8f21bb13fae4bbdf61e0"
+    },
+    {
       "path": "README.md",
-      "bytes": 8432,
-      "sha256": "90795c5f0871f592250d5f9f0f0bfc298c3ff1d925fa3e2ec2c4df4ba2a2b399"
+      "bytes": 9063,
+      "sha256": "fb99661b607e0ba0c5498008ae8444dca9a43b885e984ce84f66d11dd8765678"
     },
     {
       "path": "docs/agent-setup.md",
-      "bytes": 12278,
-      "sha256": "1b78f5a7fba95d03542404aa68d3985d8a0fa1b31222204248dbc864643d99e2"
+      "bytes": 12255,
+      "sha256": "df207fa0a6f0d6b45f323cf2a31dfd139341f9d1fd67c7f9036eb1a56653a993"
     },
     {
       "path": "docs/course-manifest.json",

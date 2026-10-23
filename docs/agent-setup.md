@@ -4,7 +4,7 @@
 
 ## 0. 先确定要做什么
 
-只阅读五课：解压完整仓库，双击 `notes/课程导航.html`，无需安装依赖。GitHub 文件页不等于 HTML 网页预览。需要访问私有仓库的朋友须由仓库所有者另行授权；本发布不自动邀请任何人。
+只阅读五课：解压完整仓库，双击 `notes/课程导航.html`，无需安装依赖。GitHub 文件页不等于 HTML 网页预览。仓库公开后可直接下载，无需协作者邀请；第三方课程素材的权利范围见根目录 README。
 
 运行笔记工具：需要 Python 3.9+、现代浏览器；脚本只使用标准库。实际测试平台为 macOS arm64，Windows/Linux 的本包脚本未实机验证。Windows 命令行把 `python3` 改为 `py -3`。Python 安装器从 https://www.python.org/downloads/ 获取；不要在不存在的 Python 上直接执行 pip 命令，本包无需 pip。
 
@@ -12,7 +12,7 @@
 
 ## 1. 下载、预检、离线跑通（不需要 BaoCut 账号）
 
-从本私有仓库 Code → Download ZIP 解压。或在已有 GitHub 访问权限时复制仓库页面给出的 clone URL，执行 `git clone <仓库URL>`；不要把 token 写进 URL。
+从仓库 Code → Download ZIP 解压，或执行 `git clone https://github.com/zhao-d-r/baocut-course-notes.git`。公开下载不需要 GitHub token。
 
 终端进入仓库根目录：
 
