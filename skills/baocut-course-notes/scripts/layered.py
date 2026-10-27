@@ -101,7 +101,7 @@ def validate(note, run_dir):
 
 def caveat_html(item):
     if isinstance(item, dict) and item.get('caveat'):
-        return '<span class="caveat"><b>限制</b>' + esc(item['caveat']) + '</span>'
+        return '<span class="caveat"><b>核对与边界</b>' + esc(item['caveat']) + '</span>'
     return ''
 
 

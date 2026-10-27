@@ -63,7 +63,7 @@ class LayeredTest(unittest.TestCase):
         self.assertEqual(page.count('data:image/svg+xml;base64,'), 2)
         self.assertIn('details class="deep"', page)
         self.assertIn('等于总量除以样本数 &lt;b&gt;', page)
-        self.assertIn('<b>限制</b>只用整数', page)
+        self.assertIn('<b>核对与边界</b>只用整数', page)
         self.assertIn('<a class="ref" href="#s1-p0"><span class="item-no">1</span>课堂段落</a>', page)
         self.assertIn('id="s1-p0"', page)
         self.assertIn('整理者衔接：衔接说明。', page)

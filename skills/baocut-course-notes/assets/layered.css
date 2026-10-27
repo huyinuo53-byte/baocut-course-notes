@@ -11,7 +11,7 @@
 .card>h2{margin-bottom:12px}
 .takeaway{font:600 21px/1.7 var(--serif);color:#1f3a2c;margin:0 0 22px}.takeaway .chip{font-size:11px}
 figure.explainer{margin:8px 0 22px}figure.explainer .zoom{border:0;box-shadow:none;background:transparent}
-figure.explainer img{width:100%;max-width:680px;height:auto;display:block}
+figure.explainer img{width:100%;max-width:560px;height:auto;display:block}
 .ref{white-space:nowrap;margin-right:10px;text-decoration:none}.ref .item-no{margin-right:4px}
 .deep{margin:6px 0 0;border-top:1px dashed var(--line)}
 .deep>summary{cursor:pointer;list-style:none;padding:14px 0;font:600 14px/1.6 var(--sans);color:var(--green)}

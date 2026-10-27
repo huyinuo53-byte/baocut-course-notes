@@ -97,7 +97,7 @@ BaoCut 的应用内 `app-release.json` 可能滞后；本次它写 2.0.0 build 5
 ## 功能与文件
 
 - `skills/baocut-course-notes/`：完整 Skill，包含 32 个源文件。
-- `examples/lecture-03-layered/`：第3课分层样板。完整笔记逐字迁移自 `notes/lecture-03/课堂笔记.html`，新增课程地图与 17 张图解；`python3 examples/lecture-03-layered/build.py` 可重建并做迁移校验。
+- `examples/lecture-03-layered/`：第3课分层样板。完整笔记逐字迁移自 `notes/lecture-03/课堂笔记.html`，新增课程地图与 17 张图解，并把正文里的证据边界说明逐句移到“核对与边界”小字，附独立精度/迁移召回评测；`python3 examples/lecture-03-layered/build.py` 可重建并做迁移校验。
 - `examples/synthetic/`：原创合成输入、布局、示意图及静态预览。
 - `tools/`：离线演示、拒绝覆盖的 Skill 安装工具及包校验工具。
 - `docs/source-manifest.json`：当前源快照及分享副本 SHA-256，不含个人路径。

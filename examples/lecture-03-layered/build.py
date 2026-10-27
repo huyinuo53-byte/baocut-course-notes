@@ -2,9 +2,10 @@
 """Rebuild lecture 3 as a notes-v3 layered page for side-by-side comparison.
 
 Every full-note text, frame, supplement, self-test item and limitation is migrated
-verbatim from notes/lecture-03/课堂笔记.html (the 2026-10-22 delivered version).
-Only layer.json and visuals/*.svg are new. A migration check fails the build if any
-original text block is missing from the new page.
+from notes/lecture-03/课堂笔记.html (the 2026-10-22 delivered version). layer.json adds
+the course map and explainers, and moves evidence-boundary clauses verbatim from a
+paragraph's body into its caveat (plus a few recorded word edits). The migration check
+fails the build unless every original clause and frame is still on the new page.
 """
 import argparse
 import base64
@@ -123,10 +124,45 @@ def parse(page, frame_dir):
     return notes
 
 
+CLAUSE = re.compile(r'[^。；？]+[。；？]?')
+
+
+def clauses(value):
+    return [c.rstrip('。；？') for c in CLAUSE.findall(value) if c.rstrip('。；？').strip()]
+
+
+def apply_edits(value, edits):
+    for old, new in edits:
+        if value.count(old) != 1:
+            raise SystemExit(f'Edit must match exactly once: {old}')
+        value = value.replace(old, new)
+    return value
+
+
+def move_caveats(notes, specs):
+    """Split paragraphs into body + caveat by moving whole clauses; nothing is dropped."""
+    for ref, spec in specs.items():
+        sec, token = ref.split(':')
+        section = notes['sections'][int(sec[1:]) - 1]
+        k = int(token[1:])
+        value = apply_edits(section['paragraphs'][k], spec.get('edits', []))
+        body, moved = [], []
+        for piece in CLAUSE.findall(value):
+            (moved if piece.rstrip('。；？') in spec['move'] else body).append(piece)
+        if [m.rstrip('。；？') for m in moved] != spec['move']:
+            raise SystemExit(f'{ref}: caveat clauses not found in order: {spec["move"]}')
+        text = ''.join(body)
+        text = text[:-1] + '。' if text.endswith('；') else text
+        section['paragraphs'][k] = {'text': text, 'caveat': '。'.join(m.rstrip('。；？') for m in moved) + '。'}
+    for section in notes['sections']:
+        shown = [p['text'] if isinstance(p, dict) else p for key in ('paragraphs', 'examples', 'editor_notes') for p in section[key]]
+        shown += [notes['supplements'][int(t[1:])]['text'] for t in section['flow'].split() if t.startswith('x')]
+        section['terms'] = [t for t in section['terms'] if any(t in x for x in shown)]
+
+
 def original_blocks(page):
     """Every text unit a reader could see in the original page."""
-    blocks = [text(x) for x in re.findall(r'<p (?:class="[^"]*" )?data-content="[^"]+">(.*?)</p>', page)]
-    blocks = [re.sub(r'^(整理者说明|案例回扣)', '', b) for b in blocks]
+    blocks = [(ref, re.sub(r'^(整理者说明|案例回扣)', '', text(x))) for ref, x in re.findall(r'<p (?:class="[^"]*" )?data-content="([^"]+)">(.*?)</p>', page)]
     blocks += [text(x) for x in re.findall(r'<h2>(.*?)</h2>', page)]
     blocks += [text(x) for x in re.findall(r'<div class="section-takeaway">.*?<p>(.*?)</p>', page, re.S)]
     blocks += [html.unescape(x) for x in re.findall(r'<img src="data:[^"]+" alt="(.*?)"', page)]
@@ -135,7 +171,7 @@ def original_blocks(page):
     blocks += [text(x) for x in re.findall(r'<h3[^>]*>(.*?)</h3>', page)]
     blocks += [text(x) for x in re.findall(r'<div class="answer-label">.*?</div><p>(.*?)</p>', page, re.S)]
     blocks += [text(x) for x in re.findall(r'<p>(.*?)</p>', re.search(r'<aside>(.*?)</aside>', page, re.S).group(1))]
-    return [b for b in blocks if b.strip()]
+    return [b if isinstance(b, tuple) else (None, b) for b in blocks if (b[1] if isinstance(b, tuple) else b).strip()]
 
 
 def main():
@@ -151,21 +187,28 @@ def main():
         shutil.copytree(HERE / 'visuals', run / 'visuals')
         notes['limitations'].append(layer['limitation'])
         notes['map'] = layer['map']
+        move_caveats(notes, layer.get('caveats', {}))
         for number, visual in layer['visuals'].items():
             notes['sections'][int(number) - 1]['visual'] = visual
         (HERE / 'notes.json').write_text(json.dumps(notes, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         result, report = layered.render(notes, run)
     new_text = text(re.sub(r'<(script|style)>.*?</\1>', '', result, flags=re.S))
     new_alts = set(html.unescape(x) for x in re.findall(r'alt="(.*?)"', result))
-    missing = [b for b in original_blocks(page) if b not in new_text and b not in new_alts]
+    edits = {ref: spec.get('edits', []) for ref, spec in layer.get('caveats', {}).items()}
+    missing = []
+    for ref, block in original_blocks(page):
+        if block in new_alts:
+            continue
+        missing += [c for c in clauses(apply_edits(block, edits.get(ref, []))) if c not in new_text]
     if missing:
-        sys.exit('Migration check failed; missing blocks:\n' + '\n'.join(missing[:10]))
+        sys.exit('Migration check failed; missing clauses:\n' + '\n'.join(missing[:10]))
     old_frames = re.findall(r'<img src="(data:image/[^"]+)"', page)
     new_frames = set(re.findall(r'<img src="(data:image/(?:png|jpeg|webp)[^"]+)"', result))
     if any(f not in new_frames for f in old_frames):
         sys.exit('Migration check failed: a frame image changed or went missing')
     Path(args.out).write_text(result, encoding='utf-8')
     print(json.dumps({'output': args.out, 'original_text_blocks_checked': len(original_blocks(page)),
+                      'paragraphs_with_caveats': len(edits), 'recorded_word_edits': sum(len(e) for e in edits.values()),
                       'original_frames_checked': len(old_frames), **report}, ensure_ascii=False, indent=2))
 
 
