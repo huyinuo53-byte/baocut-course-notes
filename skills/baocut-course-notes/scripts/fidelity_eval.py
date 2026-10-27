@@ -225,20 +225,27 @@ def prepare(args):
         new_top = {r for r in refs if r == 'map' or re.fullmatch(r's\d+:(takeaway|visual)', r)} - \
             {i['ref'] for i in read_json(args.only_stale).get('precision', {}).get('items', [])}
         refs = sorted(changed | new_top)
+    # Self-test answers are checked against the section they point back to.
+    quiz_section = {f'q{j}': t.get('section') for j, t in enumerate(notes.get('self_test', []), 1)}
     sections = {}
     for i, s in enumerate(notes['sections'], 1):
-        mine = [r for r in refs if r.startswith(f's{i}:')]
+        mine = [r for r in refs if r.startswith(f's{i}:') or quiz_section.get(r) == i]
         if not mine:
             continue
         frames = sorted({s['frames'][int(r.split(':f')[1])]['path'] for r in mine if ':f' in r})
         sections[f's{i}'] = {'title': s['title'], 'time': f"{stamp(s['start'])}-{stamp(s['end'])}",
                              'transcript': [f"[{x} {stamp(rows[x]['start'])}] {rows[x]['text']}" for x in s['source_ids'] if x in rows],
                              'frames_to_check': [str(run / f) for f in frames]}
-    items = [{'ref': r, 'hash': hashes[r], 'text': unit_text(notes, r, run)} for r in refs]
+    items = []
+    for r in refs:
+        sec = re.match(r's(\d+):', r)
+        context = f's{sec[1]}' if sec else (f's{quiz_section[r]}' if quiz_section.get(r) else 'transcript.txt')
+        items.append({'ref': r, 'hash': hashes[r], 'context': context, 'text': unit_text(notes, r, run)})
     write(out / 'precision/items.json', dump({'sections': sections, 'items': items}) + '\n')
     write(out / 'precision/PROMPT.md', PRECISION_PROMPT)
     lines = [f"[{x['id']} {stamp(x['start'])}] {x['text']}" for x in sorted(rows.values(), key=lambda r: r['start'])]
     write(out / 'author/transcript.txt', '\n'.join(lines) + '\n')
+    write(out / 'precision/transcript.txt', '\n'.join(lines) + '\n')
     frames_dir = run / 'frames'
     write(out / 'author/PROMPT.md', AUTHOR_PROMPT.format(n=args.questions, frames=frames_dir if frames_dir.exists() else 'none (text-only run)'))
     write(out / 'author/GRADE.md', GRADE_PROMPT)
@@ -322,9 +329,10 @@ def score_cmd(args):
 
 PRECISION_PROMPT = """# Precision review (packet: items.json)
 
-You check classroom notes against the lecture. You did not write them. Read only items.json in this folder
-and the image files it lists under frames_to_check. Judge each item's `text` against its section's
-`transcript` lines and listed frames:
+You check classroom notes against the lecture. You did not write them. Read only items.json and transcript.txt
+in this folder and the image files listed under frames_to_check. Each item's `context` names the section in
+`sections` whose transcript lines and frames to judge it against; items whose context is transcript.txt
+(course map, summary, self-test without a section) are checked against the full transcript. Judge each `text`:
 
 - supported: fully backed by the transcript/frames
 - partial: partly backed, strength or tone changed, or editor inference presented as the lecturer's words

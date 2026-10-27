@@ -178,6 +178,9 @@ class EvalPipelineTest(RunDir):
         refs = {i['ref'] for i in items['items']}
         self.assertTrue({'map', 's1:takeaway', 's1:visual', 's2:takeaway'} <= refs)
         self.assertIn('平均数是总量除以样本数', ''.join(items['sections']['s1']['transcript']))
+        by_ref = {i['ref']: i for i in items['items']}
+        self.assertEqual((by_ref['q1']['context'], by_ref['map']['context']), ('s1', 'transcript.txt'))
+        self.assertTrue((packets / 'precision/transcript.txt').exists())
         self.assertNotIn('expected', (packets / 'answer/notes.txt').read_text(encoding='utf-8'))
         self.answer_packets(packets)
         self.assertEqual(self.merge(packets)['precision']['reviewer'], 'independent_agent')
