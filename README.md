@@ -82,7 +82,7 @@ python3 skills/baocut-course-notes/scripts/course_notes.py chunks --input my-run
 python3 skills/baocut-course-notes/scripts/course_notes.py render --notes my-run/notes.json --index my-run/chunks/index.json --out my-run/notes.html
 ```
 
-5. 由另一个代理或人做[保真评测](skills/baocut-course-notes/references/fidelity-eval.md)（精度/召回），用 `scripts/fidelity_eval.py` 计分；用 `scripts/manifest.py` 记录来源、阶段、问题与冻结版本（见[可追溯运行](skills/baocut-course-notes/references/traceability.md)）。
+5. 用 `scripts/fidelity_eval.py prepare` 生成评审包，交给**另一家模型**做[保真评测](skills/baocut-course-notes/references/fidelity-eval.md)（精度/召回），`merge` 汇总并计分，改稿后只复核变化条目；用 `scripts/manifest.py` 记录来源、阶段、问题与冻结版本（见[可追溯运行](skills/baocut-course-notes/references/traceability.md)）。
 
 原帧和讲义图必须在 run 目录内，格式为 PNG/JPEG/WebP，图解为 run 目录内的 SVG；生成的 HTML 内嵌图片、样式和脚本，正文可离线读，外部来源链接仍需联网。
 
@@ -96,14 +96,14 @@ BaoCut 的应用内 `app-release.json` 可能滞后；本次它写 2.0.0 build 5
 
 ## 功能与文件
 
-- `skills/baocut-course-notes/`：完整 Skill，包含 32 个源文件。
+- `skills/baocut-course-notes/`：完整 Skill，包含 37 个源文件。
 - `examples/lecture-03-layered/`：第3课分层样板。完整笔记逐字迁移自 `notes/lecture-03/课堂笔记.html`，新增课程地图与 17 张图解，并把正文里的证据边界说明逐句移到“核对与边界”小字，附独立精度/迁移召回评测；`python3 examples/lecture-03-layered/build.py` 可重建并做迁移校验。
 - `examples/synthetic/`：原创合成输入、布局、示意图及静态预览。
 - `tools/`：离线演示、拒绝覆盖的 Skill 安装工具及包校验工具。
 - `docs/source-manifest.json`：当前源快照及分享副本 SHA-256，不含个人路径。
 - `docs/validation.md`：实际测试和未测范围；`PACKAGE-MANIFEST.json` 是包内文件校验清单。
 
-功能包括 `chunks/render`（notes v3 分层页面；v2 + reading-layout 仍兼容）、`manifest.py`（来源、依赖、阶段日志、问题与哈希链版本）、`fidelity_eval.py`（精度/召回计分）、材料阅读台账校验，以及只读核对旧 run 快照的 `trace_artifacts.py`。
+功能包括 `chunks/scaffold/validate/render`（v3 骨架、一次列出全部问题的校验、分层页面；v2 + reading-layout 仍兼容）、`frames.py`（换页检测、联系表与精确截帧）、`illustrate.py` / `svgcard.py`（手绘信息图提示词与 SVG 卡片）、`check_html.py`（离线与 headless Chrome 页面检查）、`manifest.py`（来源、依赖、阶段日志、问题与哈希链版本）、`fidelity_eval.py`（外部模型评审包、逐条哈希增量复核与计分）、材料阅读台账校验，以及只读核对旧 run 快照的 `trace_artifacts.py`。
 
 运行原有测试：
 
@@ -111,7 +111,7 @@ BaoCut 的应用内 `app-release.json` 可能滞后；本次它写 2.0.0 build 5
 python3 -B -m unittest discover -s skills/baocut-course-notes/scripts -p 'test_*.py' -v
 ```
 
-2026-10-27 分层版本的 68 项测试通过。检查的是结构、覆盖、版本链、评测计分和渲染行为，不能证明任意真实课程内容完整或准确；内容保真靠保真评测。
+2026-10-27 精简流程版本的 83 项测试通过（无 ffmpeg 时跳过 1 项选帧测试）。检查的是结构、覆盖、版本链、评测计分和渲染行为，不能证明任意真实课程内容完整或准确；内容保真靠保真评测。
 
 ## 版权与分享边界
 

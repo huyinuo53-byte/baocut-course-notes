@@ -7,21 +7,41 @@ fidelity_eval.py against an independent review.
 import base64
 from pathlib import Path
 
-from course_notes import esc, figure_source, safe_path, seconds, stamp, text_of
+from course_notes import Problems, esc, figure_source, safe_path, seconds, stamp, text_of
 from reading_layout import FIELDS, emphasize, resolve, supplements
 
 ASSETS = Path(__file__).resolve().parents[1] / 'assets'
 REF_LABELS = {'p': '课堂段落', 'e': '课堂案例', 'n': '整理者说明', 'x': '外部资料', 'f': '原帧'}
 
 
+RASTER = {b'\x89PNG\r\n\x1a\n': 'image/png', b'\xff\xd8\xff': 'image/jpeg', b'RIFF': 'image/webp'}
+MAX_RASTER = 3_000_000
+
+
 def svg_uri(item, run_dir, where):
+    """Data URI for an explainer: a plain SVG, or a generated PNG/JPEG/WebP illustration whose
+    visible text is declared in `labels` so reviewers can check every word drawn into the pixels."""
     if not isinstance(item, dict) or not isinstance(item.get('path'), str) or not isinstance(item.get('alt'), str) or not item['alt'].strip():
         raise ValueError(where + ' visual needs path and alt text')
     path = safe_path(Path(run_dir) / item['path'])
-    if not path.is_relative_to(Path(run_dir).resolve()) or path.suffix.lower() != '.svg':
-        raise ValueError(where + ' visual must be an .svg inside the run directory')
+    suffix = path.suffix.lower()
+    if not path.is_relative_to(Path(run_dir).resolve()) or suffix not in ('.svg', '.png', '.jpg', '.jpeg', '.webp'):
+        raise ValueError(where + ' visual must be an .svg or .png/.jpg/.webp inside the run directory')
     data = path.read_bytes()
-    text = data.decode('utf-8')
+    if suffix != '.svg':
+        mime = next((m for magic, m in RASTER.items() if data.startswith(magic) and (magic != b'RIFF' or data[8:12] == b'WEBP')), None)
+        if not mime:
+            raise ValueError(f'{where} visual {item["path"]} is not a PNG/JPEG/WebP file')
+        labels = item.get('labels')
+        if not isinstance(labels, list) or not labels or any(not isinstance(t, str) or not t.strip() for t in labels):
+            raise ValueError(f'{where} illustration needs labels: every text string visible in the image, for review')
+        if len(data) > MAX_RASTER:
+            raise ValueError(f'{where} illustration is {len(data) // 1000} KB; compress to under {MAX_RASTER // 1_000_000} MB (e.g. sips -Z 1536 / WebP)')
+        return f'data:{mime};base64,' + base64.b64encode(data).decode('ascii')
+    try:
+        text = data.decode('utf-8')
+    except UnicodeDecodeError as exc:
+        raise ValueError(f'{where} visual {item["path"]} is not UTF-8 (byte {exc.start}); write SVG files as UTF-8, e.g. with svgcard.py') from None
     if '<svg' not in text[:400] or '<!ENTITY' in text:
         raise ValueError(where + ' visual is not a plain SVG file')
     # Embedded through <img>, so any script or external reference inside the SVG never runs.
@@ -36,65 +56,84 @@ def section_tokens(section, i, entry_flow):
     return entry_flow.split()
 
 
-def validate(note, run_dir):
+def validate(note, run_dir, problems=None):
+    """Structural checks for the layered page. With a Problems list, collects every failure
+    with its field path; without one, raises the first (render behaviour)."""
+    local = problems is None
+    problems = Problems() if local else problems
     if note.get('schema_version') != 3:
         raise ValueError('Layered rendering requires notes schema_version 3')
     sections = note.get('sections') or []
     supp = supplements(note)
     expected = {(kind, i, j) for i, s in enumerate(sections) for kind, field in FIELDS.items() for j in range(len(s.get(field, [])))}
     seen, flows, visuals = set(), [], 0
+
+    def place(token, i, shown):
+        key = resolve(token, i)
+        kind, owner, index = key
+        if kind == 'x':
+            if index >= len(supp):
+                raise ValueError('Unknown supplement reference: ' + token)
+        elif key not in expected:
+            raise ValueError('Unknown or out-of-range content reference: ' + token)
+        if key in seen:
+            raise ValueError('Duplicate content reference: ' + token)
+        seen.add(key)
+        if kind == 'f' and owner != i and sections[owner]['frames'][index].get('source_type', 'video_frame') != 'pdf_page':
+            raise ValueError('Video frame must remain in its timed section')
+        if kind == 'x':
+            shown.append(supp[index]['text'])
+        elif kind != 'f':
+            shown.append(text_of(sections[owner][FIELDS[kind]][index]))
+
+    def visual(s, i, tokens):
+        svg_uri(s['visual'], run_dir, f'Section {i+1}')
+        refs = s['visual'].get('refs')
+        if not isinstance(refs, list) or not refs or any(r not in tokens for r in refs):
+            raise ValueError(f'Section {i+1} visual refs must list the full-note tokens it is drawn from')
+
     for i, s in enumerate(sections):
+        where = f'sections[{i}]'
         for key in ('short', 'takeaway'):
             if not isinstance(s.get(key), str) or not s[key].strip():
-                raise ValueError(f'Section {i+1} requires {key}')
-        tokens, shown = section_tokens(s, i, s.get('flow')), []
+                problems.append((f'{where}.{key}', ValueError(f'Section {i+1} requires {key}')))
+        tokens, shown = problems.attempt(f'{where}.flow', section_tokens, s, i, s.get('flow')) or [], []
         for token in tokens:
-            key = resolve(token, i)
-            kind, owner, index = key
-            if kind == 'x':
-                if index >= len(supp):
-                    raise ValueError('Unknown supplement reference: ' + token)
-            elif key not in expected:
-                raise ValueError('Unknown or out-of-range content reference: ' + token)
-            if key in seen:
-                raise ValueError('Duplicate content reference: ' + token)
-            seen.add(key)
-            if kind == 'f' and owner != i and sections[owner]['frames'][index].get('source_type', 'video_frame') != 'pdf_page':
-                raise ValueError('Video frame must remain in its timed section')
-            if kind == 'x':
-                shown.append(supp[index]['text'])
-            elif kind != 'f':
-                shown.append(text_of(sections[owner][FIELDS[kind]][index]))
+            problems.attempt(f'{where}.flow:{token}', place, token, i, shown)
         terms = s.get('terms', [])
         if not isinstance(terms, list) or any(not isinstance(t, str) or not t.strip() for t in terms):
-            raise ValueError('Emphasis terms must be nonempty plain strings')
-        missing = [t for t in terms if not any(t in text for text in shown)]
-        if missing:
-            raise ValueError(f'Section {i+1} emphasis terms not found in its full notes: {missing}')
+            problems.append((f'{where}.terms', ValueError('Emphasis terms must be nonempty plain strings')))
+        else:
+            missing = [t for t in terms if not any(t in text for text in shown)]
+            if missing:
+                problems.append((f'{where}.terms', ValueError(f'Section {i+1} emphasis terms not found in its full notes: {missing}')))
         if s.get('visual') is not None:
-            svg_uri(s['visual'], run_dir, f'Section {i+1}')
-            refs = s['visual'].get('refs')
-            if not isinstance(refs, list) or not refs or any(r not in tokens for r in refs):
-                raise ValueError(f'Section {i+1} visual refs must list the full-note tokens it is drawn from')
-            visuals += 1
+            before = len(problems)
+            problems.attempt(f'{where}.visual', visual, s, i, tokens)
+            visuals += len(problems) == before
         flows.append(tokens)
     missing = {k for k in expected if k not in seen}
     if missing:
-        raise ValueError('Layered page omits content: ' + str(sorted(missing)))
+        problems.append(('sections[].flow', ValueError('Layered page omits content: ' + str(sorted(missing)))))
     if note.get('map') is not None:
-        svg_uri(note['map'], run_dir, 'Course map')
-        visuals += 1
+        before = len(problems)
+        problems.attempt('map', svg_uri, note['map'], run_dir, 'Course map')
+        visuals += len(problems) == before
     starts = []
-    for group in note.get('groups', []):
+    for j, group in enumerate(note.get('groups', [])):
         start = group.get('start')
         if isinstance(start, bool) or not isinstance(start, int) or not 1 <= start <= len(sections) or start in starts:
-            raise ValueError('Invalid or repeated navigation group start')
-        esc(group['label'])
+            problems.append((f'groups[{j}]', ValueError('Invalid or repeated navigation group start')))
+            continue
+        problems.attempt(f'groups[{j}].label', esc, group.get('label'))
         starts.append(start)
     for token, text in note.get('bridges', {}).items():
         if not isinstance(token, str) or not token[1:].isdigit() or token[0] != 'x' or int(token[1:]) >= len(supp):
-            raise ValueError('Bridge must reference an existing supplement')
-        esc(text)
+            problems.append((f'bridges.{token}', ValueError('Bridge must reference an existing supplement')))
+        else:
+            problems.attempt(f'bridges.{token}', esc, text)
+    if local and problems:
+        raise problems[0][1]
     unplaced = [j for j in range(len(supp)) if ('x', -1, j) not in seen]
     return flows, unplaced, visuals
 
