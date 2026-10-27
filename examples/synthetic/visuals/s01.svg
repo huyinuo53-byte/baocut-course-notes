@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <text x="30" y="40" font-size="20" fill="#636c66">原来</text>
+  <g fill="#244e3d">
+    <rect x="30" y="60" width="28" height="28" rx="4"/><rect x="62" y="60" width="28" height="28" rx="4"/>
+    <rect x="30" y="110" width="28" height="28" rx="4"/><rect x="62" y="110" width="28" height="28" rx="4"/><rect x="94" y="110" width="28" height="28" rx="4"/><rect x="126" y="110" width="28" height="28" rx="4"/>
+    <rect x="30" y="160" width="28" height="28" rx="4"/><rect x="62" y="160" width="28" height="28" rx="4"/><rect x="94" y="160" width="28" height="28" rx="4"/><rect x="126" y="160" width="28" height="28" rx="4"/>
+  </g>
+  <g fill="#974c35"><rect x="158" y="160" width="28" height="28" rx="4"/><rect x="190" y="160" width="28" height="28" rx="4"/></g>
+  <text x="230" y="182" font-size="18" fill="#636c66">2 · 4 · 6</text>
+  <path d="M300 125 h60" stroke="#974c35" stroke-width="4" marker-end="url(#a)"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#974c35"/></marker></defs>
+  <text x="300" y="105" font-size="18" fill="#974c35">移 2 个</text>
+  <text x="390" y="40" font-size="20" fill="#636c66">均分后</text>
+  <g fill="#244e3d">
+    <rect x="390" y="60" width="28" height="28" rx="4"/><rect x="422" y="60" width="28" height="28" rx="4"/><rect x="454" y="60" width="28" height="28" rx="4"/><rect x="486" y="60" width="28" height="28" rx="4"/>
+    <rect x="390" y="110" width="28" height="28" rx="4"/><rect x="422" y="110" width="28" height="28" rx="4"/><rect x="454" y="110" width="28" height="28" rx="4"/><rect x="486" y="110" width="28" height="28" rx="4"/>
+    <rect x="390" y="160" width="28" height="28" rx="4"/><rect x="422" y="160" width="28" height="28" rx="4"/><rect x="454" y="160" width="28" height="28" rx="4"/><rect x="486" y="160" width="28" height="28" rx="4"/>
+  </g>
+  <rect x="30" y="226" width="540" height="54" rx="10" fill="#e6efe8"/>
+  <text x="300" y="261" font-size="22" text-anchor="middle" fill="#244e3d" font-weight="700">平均数 = 总量 12 ÷ 样本数 3 = 4</text>
+</svg>

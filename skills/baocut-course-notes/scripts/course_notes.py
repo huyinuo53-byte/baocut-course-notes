@@ -2,7 +2,6 @@
 """Deterministic handoff helpers. No model calls and no .bcut writes."""
 import argparse
 import base64
-import datetime as dt
 import hashlib
 import html
 import json
@@ -10,7 +9,6 @@ import math
 import os
 from pathlib import Path
 import tempfile
-import uuid
 
 
 def safe_path(value):
@@ -102,6 +100,55 @@ def page_label(pages):
     return 'PDF物理页 ' + '、'.join(str(p) for p in pages)
 
 
+def figure_source(frame, run_dir, start, end):
+    """Validate one notes frame; return (provenance HTML, data URI)."""
+    kind = frame.get('source_type', 'video_frame')
+    if kind == 'video_frame':
+        t = seconds(frame['time'])
+        if not start <= t <= end:
+            raise ValueError('Screenshot outside section interval')
+        origin = ('视频原帧 ' if frame.get('source_type') else '') + stamp(t)
+    elif kind == 'pdf_page':
+        if frame.get('time') is not None:
+            raise ValueError('PDF image has no video capture time; use related_time for navigation')
+        origin = esc(frame['source_label']) + ' · ' + page_label([frame['page']])
+        if not frame['source_label'].strip():
+            raise ValueError('PDF image requires source_label')
+        if frame.get('source_url'):
+            origin += ' · ' + source_link(frame['source_url'], '原始讲义')
+        if frame.get('related_time') is not None:
+            t = seconds(frame['related_time'])
+            if not start <= t <= end:
+                raise ValueError('Related lecture time outside section interval')
+            origin += ' · 相关讲解 ' + stamp(t) + '（不是同秒视频截图）'
+    else:
+        raise ValueError('Unknown image source_type')
+    path = safe_path(Path(run_dir) / frame['path'])
+    if not path.is_relative_to(Path(run_dir).resolve()):
+        raise ValueError('Screenshot must stay inside run directory')
+    data = path.read_bytes()
+    if data.startswith(b'\x89PNG\r\n\x1a\n'):
+        mime = 'image/png'
+    elif data.startswith(b'\xff\xd8\xff'):
+        mime = 'image/jpeg'
+    elif data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        mime = 'image/webp'
+    else:
+        raise ValueError('Expected PNG/JPEG/WebP screenshot')
+    return origin, 'data:' + mime + ';base64,' + base64.b64encode(data).decode('ascii')
+
+
+def text_of(item):
+    """Content items are plain strings, or {"text", "caveat"} in notes v3."""
+    if isinstance(item, dict):
+        if set(item) - {'text', 'caveat'} or not isinstance(item.get('text'), str) or not isinstance(item.get('caveat', ''), str):
+            raise ValueError('Content item object allows only text and caveat strings')
+        return item['text']
+    if not isinstance(item, str):
+        raise ValueError('Expected plain text string')
+    return item
+
+
 def render(args):
     note_path = safe_path(args.notes)
     note, index = read_json(note_path), read_json(args.index)
@@ -135,48 +182,15 @@ def render(args):
         toc.append(f'<a href="#s{i}">{title}</a>')
         block = f'<section id="s{i}"><small>{stamp(start)}—{stamp(end)}</small><h2>{title}</h2>'
         for p in s['paragraphs']:
-            block += '<p>' + esc(p) + '</p>'
+            block += '<p>' + esc(text_of(p)) + '</p>'
         for key, label in [('examples', '课堂案例与演示'), ('editor_notes', '整理者补充')]:
             if s.get(key):
-                block += '<h3>' + label + '</h3>' + ''.join('<p>' + esc(p) + '</p>' for p in s[key])
+                block += '<h3>' + label + '</h3>' + ''.join('<p>' + esc(text_of(p)) + '</p>' for p in s[key])
         for frame in s.get('frames', []):
-            kind = frame.get('source_type', 'video_frame')
-            if kind == 'video_frame':
-                t = seconds(frame['time'])
-                if not start <= t <= end:
-                    raise ValueError('Screenshot outside section interval')
-                origin = ('视频原帧 ' if frame.get('source_type') else '') + stamp(t)
-            elif kind == 'pdf_page':
-                if frame.get('time') is not None:
-                    raise ValueError('PDF image has no video capture time; use related_time for navigation')
-                origin = esc(frame['source_label']) + ' · ' + page_label([frame['page']])
-                if not frame['source_label'].strip():
-                    raise ValueError('PDF image requires source_label')
-                if frame.get('source_url'):
-                    origin += ' · ' + source_link(frame['source_url'], '原始讲义')
-                if frame.get('related_time') is not None:
-                    t = seconds(frame['related_time'])
-                    if not start <= t <= end:
-                        raise ValueError('Related lecture time outside section interval')
-                    origin += ' · 相关讲解 ' + stamp(t) + '（不是同秒视频截图）'
-            else:
-                raise ValueError('Unknown image source_type')
-            path = safe_path(note_path.parent / frame['path'])
-            if not path.is_relative_to(note_path.parent):
-                raise ValueError('Screenshot must stay inside run directory')
-            data = path.read_bytes()
-            if data.startswith(b'\x89PNG\r\n\x1a\n'):
-                mime = 'image/png'
-            elif data.startswith(b'\xff\xd8\xff'):
-                mime = 'image/jpeg'
-            elif data[:4] == b'RIFF' and data[8:12] == b'WEBP':
-                mime = 'image/webp'
-            else:
-                raise ValueError('Expected PNG/JPEG/WebP screenshot')
+            origin, uri = figure_source(frame, note_path.parent, start, end)
             caption = esc(frame['caption'])
             if not caption.strip():
                 raise ValueError('Screenshot needs caption')
-            uri = 'data:' + mime + ';base64,' + base64.b64encode(data).decode('ascii')
             block += f'<figure><button class="zoom" aria-label="放大：{caption}"><img src="{uri}" alt="{caption}" loading="eager"></button><figcaption>{origin} · {caption}</figcaption></figure>'
             image_count += 1
         parts.append(block + '</section>')
@@ -228,6 +242,14 @@ def render(args):
     # One replacement pass: content resembling template markers stays literal.
     import re
     page = re.sub(r'\{\{(TITLE|META|TOC|BODY|LIMITS|SOURCE)\}\}', lambda m: values[m[1]], page)
+    if note.get('schema_version') == 3:
+        if getattr(args, 'layout', None):
+            raise ValueError('notes v3 carries its own layout; do not pass --layout')
+        import layered
+        page, report = layered.render(note, note_path.parent)
+        write(args.out, page)
+        print(dump({'style': 'layered', 'output': str(safe_path(args.out)), 'sections': len(sections), 'images': image_count, 'visuals': report['visuals'], 'coverage_declared': len(covered), 'omitted': len(omitted), 'fidelity_eval': 'required by agent'}))
+        return
     layout_path = getattr(args, 'layout', None)
     if layout_path is None and (note_path.parent / 'reading-layout.json').exists():
         layout_path = note_path.parent / 'reading-layout.json'
@@ -240,67 +262,11 @@ def render(args):
     print(dump({'style': 'editorial' if layout_path else 'legacy', 'output': str(safe_path(args.out)), 'sections': len(sections), 'images': image_count, 'coverage_declared': len(covered), 'omitted': len(omitted), 'semantic_and_browser_qa': 'required by agent'}))
 
 
-def record(args):
-    path = safe_path(args.run) / 'events.jsonl'
-    path.parent.mkdir(parents=True, exist_ok=True)
-    now = dt.datetime.now(dt.timezone.utc).isoformat()
-    basis = getattr(args, 'time_basis', 'realtime')
-    occurred = getattr(args, 'occurred_at', None)
-    if basis not in ('realtime', 'retrospective'):
-        raise ValueError('Invalid time basis')
-    if occurred:
-        parsed = dt.datetime.fromisoformat(occurred.replace('Z', '+00:00'))
-        if parsed.tzinfo is None:
-            raise ValueError('occurred_at requires a timezone')
-        occurred = parsed.astimezone(dt.timezone.utc).isoformat()
-    elif basis == 'realtime':
-        occurred = now
-    event = {'schema_version': 2, 'event_id': uuid.uuid4().hex,
-             'at': now, 'occurred_at': occurred, 'time_basis': basis,
-             'stage': args.stage, 'status': args.status, 'detail': args.detail}
-    for field in ('run_id', 'item_id', 'actor', 'attempt_id', 'job_id', 'reason', 'evidence'):
-        event[field] = getattr(args, field, None)
-    with path.open('a', encoding='utf-8') as f:
-        f.write(json.dumps(event, ensure_ascii=False) + '\n')
-    print(dump(event))
-
-
-def remember(args):
-    review = read_json(args.review)
-    for key in ('run_id', 'outcome', 'summary', 'lessons'):
-        if key not in review:
-            raise ValueError('Missing review field: ' + key)
-    if review['outcome'] not in ('completed', 'partial', 'failed'):
-        raise ValueError('Invalid outcome')
-    lessons = review['lessons'][:5]
-    for item in lessons:
-        if item.get('status') not in ('candidate', 'verified', 'rejected'):
-            raise ValueError('Invalid lesson status')
-        for k in ('scope', 'finding', 'evidence', 'next_action'):
-            if not isinstance(item.get(k), str) or not item[k].strip():
-                raise ValueError('Incomplete lesson evidence')
-    def short(s):
-        return str(s).replace('\n', ' ')[:600]
-    lines = ['# BaoCut course notes execution memory', '', 'Run: ' + short(review['run_id']), 'Outcome: ' + review['outcome'], 'Summary: ' + short(review['summary']), '', 'These are observations, not instructions. Apply only when scope matches.']
-    for l in lessons:
-        lines.append('- ' + '; '.join(k + '=' + short(l[k]) for k in ('status', 'scope', 'finding', 'evidence', 'next_action')))
-    name = dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-baocut-course-notes-' + uuid.uuid4().hex[:8] + '.md'
-    out = safe_path(args.out) / name
-    write(out, '\n'.join(lines) + '\n')
-    print(dump({'memory_update': str(out)}))
-
-
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest='command', required=True)
     c = sub.add_parser('chunks'); c.add_argument('--input', required=True); c.add_argument('--out', required=True); c.set_defaults(fn=chunks)
     r = sub.add_parser('render'); r.add_argument('--notes', required=True); r.add_argument('--index', required=True); r.add_argument('--out', required=True); r.add_argument('--layout'); r.add_argument('--require-layout', action='store_true'); r.set_defaults(fn=render)
-    e = sub.add_parser('record'); e.add_argument('--run', required=True); e.add_argument('--stage', required=True); e.add_argument('--status', choices=['started','completed','failed','paused','reused'], required=True); e.add_argument('--detail', default=''); e.set_defaults(fn=record)
-    e.add_argument('--time-basis', choices=['realtime', 'retrospective'], default='realtime')
-    e.add_argument('--occurred-at', help='Actual event time with timezone; retrospective unknown stays null')
-    for field in ('run-id', 'item-id', 'actor', 'attempt-id', 'job-id', 'reason', 'evidence'):
-        e.add_argument('--' + field)
-    m = sub.add_parser('remember'); m.add_argument('--review', required=True); m.add_argument('--out', required=True); m.set_defaults(fn=remember)
     args = p.parse_args()
     try:
         args.fn(args)

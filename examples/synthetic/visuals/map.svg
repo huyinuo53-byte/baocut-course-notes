@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#636c66"/></marker></defs>
+  <rect x="20" y="40" width="250" height="100" rx="14" fill="#e6efe8"/>
+  <text x="145" y="80" font-size="16" text-anchor="middle" fill="#636c66">第 1 节</text>
+  <text x="145" y="112" font-size="22" text-anchor="middle" fill="#244e3d" font-weight="700">平均数 = 均分</text>
+  <path d="M278 90 h40" stroke="#636c66" stroke-width="3" marker-end="url(#a)"/>
+  <rect x="330" y="40" width="250" height="100" rx="14" fill="#f6e8e1"/>
+  <text x="455" y="80" font-size="16" text-anchor="middle" fill="#636c66">第 2 节</text>
+  <text x="455" y="112" font-size="22" text-anchor="middle" fill="#974c35" font-weight="700">比较前核对样本</text>
+</svg>
