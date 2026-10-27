@@ -2,6 +2,10 @@
 
 `notes.json` 是一课的唯一事实源：完整笔记、来源归属和阅读布局都在这一个文件里，不再有需要用哈希绑定的独立布局文件。脚本不生成语义内容，所有文字按纯文本转义。
 
+- 起步用 `course_notes.py scaffold` 生成绑定分块的骨架（不要从零手写或另写生成器）；`TODO(scaffold)` 占位会被校验拒绝，`read_chunks` 必须由读过转写的人或代理填写。
+- 写完用 `course_notes.py validate` 一次拿到全部问题，每条带字段路径（如 `sections[14].visual`、`sections[3].source_ids`）；不必读脚本源码猜规则。下面的示例和 `examples/synthetic`、`scripts/test_layered.py` 中的 `v3_notes()` 都是能通过校验的完整样例。
+- `visual` 可以是 SVG，也可以是生成的 PNG/JPEG/WebP 信息图；位图必须带 `labels`：图中出现的全部文字，逐条列出，例如 `{"path": "visuals/s01.jpg", "alt": "…", "refs": ["p0"], "labels": ["断网以后", "设计重试"]}`。
+
 ```json
 {
   "schema_version": 3,

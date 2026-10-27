@@ -91,11 +91,23 @@ class LayeredTest(unittest.TestCase):
 
     def test_visual_must_be_svg_inside_run(self):
         notes = copy.deepcopy(self.notes)
-        notes['sections'][0]['visual']['path'] = 'frame.png'
+        notes['sections'][0]['visual']['path'] = 'frame.gif'
         with self.assertRaisesRegex(ValueError, 'svg'):
             self.render(notes)
         notes['sections'][0]['visual']['path'] = '../outside.svg'
         with self.assertRaisesRegex(ValueError, 'svg|inside'):
+            self.render(notes)
+
+    def test_generated_illustration_needs_declared_labels(self):
+        notes = copy.deepcopy(self.notes)
+        notes['sections'][0]['visual']['path'] = 'frame.png'
+        with self.assertRaisesRegex(ValueError, 'labels'):
+            self.render(notes)
+        notes['sections'][0]['visual']['labels'] = ['平均数', '均分']
+        self.assertIn('data:image/png;base64', self.render(notes))
+        (self.root / 'fake.png').write_text('not an image', encoding='utf-8')
+        notes['sections'][0]['visual']['path'] = 'fake.png'
+        with self.assertRaisesRegex(ValueError, 'PNG/JPEG/WebP'):
             self.render(notes)
 
     def test_takeaway_required_and_layout_flag_rejected(self):

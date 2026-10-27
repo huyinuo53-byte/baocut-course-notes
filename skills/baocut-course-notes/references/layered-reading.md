@@ -33,7 +33,21 @@ eli5 的做法是：假设读者对主题一无所知，用大图、少字解释
 
 截图和讲义页是“证据图”，放在完整笔记里；图解是“解释图”，由你重新画。两者不互相替代。
 
+### 手绘信息图（推荐，需要生图工具）
+
+读者反馈手绘风格的教学信息图明显比文字框 SVG 好读：米白底、彩色马克笔线条、圆角分区卡片、简洁人物与图标、粗箭头和底部一句话横幅。做法：
+
+1. 先确认要画的事实都在本节完整笔记里，写好 `visual.refs`。
+2. 写 `visual.labels`：图上允许出现的全部文字，短语而非句子，通常 6–12 条，取自完整笔记；数字照抄原文。
+3. `python3 <skill>/scripts/illustrate.py prompt --notes <run>/notes.json --ref s3 --plain` 生成提示词（统一风格、竖版 2:3、只许出现 labels 里的字），交给生图工具（如 Codex 图像生成）出图，存为 `visuals/raw-s03.png`。
+4. `python3 <skill>/scripts/illustrate.py fit --in visuals/raw-s03.png --out visuals/s03.jpg` 压缩（默认最长边 1280，约 0.4–0.6 MB）。
+5. 自己先看一遍：图中文字是否与 labels 逐字一致、有无多出来的字或数字、箭头是否画出了笔记没有的因果。有错就重新生成，不要手工涂改。课程地图用 `--ref map`（横版 3:2）。
+
+生成图同样要经过精度评审：评审对照 labels 与原句逐字核对，图里任何清单外的文字或因果都按 `distorted` 处理。没有生图工具时用下面的 SVG 卡片。
+
 ### SVG 规范
+
+`python3 <skill>/scripts/svgcard.py build --spec card.json --out visuals/s03.svg` 按以下规范生成卡片（行内一个框或两栏，行间自动加箭头，UTF-8）；手写的 SVG 用 `svgcard.py lint visuals/*.svg` 检查宽度、字号、外部引用和标题。
 
 - 一张图一个想法。正文文字 ≤ 30 个字，用短标签而不是句子。
 - 先为手机设计：`viewBox` 宽 400，任何文字 ≥ 16（主标签 18–22）。手机 360px 宽时图约缩到 0.8 倍，16 仍有约 13px；桌面最宽显示 560px。宽 600 的画布在手机上会缩到约 0.53 倍，16 只剩 9px，不要用。
