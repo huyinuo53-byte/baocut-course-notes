@@ -84,6 +84,10 @@ class ValidateTest(RunDir):
         quiet(c.render, Args(notes=self.save(), index=self.index, out=self.root / 'o.html'))
         log = json.loads((self.root / 'manifest.json').read_text(encoding='utf-8'))['log']
         self.assertEqual(log[-1]['stage'], 'render')
+        frozen = {'schema_version': 1, 'run_id': 't', 'log': [], 'revisions': [{'rev': 1, 'delivered': True}]}
+        (self.root / 'manifest.json').write_text(json.dumps(frozen), encoding='utf-8')
+        quiet(c.validate, Args(notes=self.root / 'notes.json', index=self.index, layout=None))
+        self.assertEqual(json.loads((self.root / 'manifest.json').read_text(encoding='utf-8')), frozen)
 
     def test_non_utf8_svg_is_named(self):
         (self.root / 'visuals/s1.svg').write_bytes(b'<svg>\xb6\xcf</svg>')  # GBK bytes Cursor once wrote
