@@ -296,6 +296,7 @@ class EvalPipelineTest(RunDir):
         entries = [entry(1, 'full', 'passed')]
         self.assertEqual(decide(entries)['mode'], 'light')
         self.assertEqual(decide(entries, skill='v2')['mode'], 'full')  # new skill version needs its own approval
+        self.assertEqual(fe.decide(entries, 'Grok 4.7-High', 'v1', 'lecture')['mode'], 'light')  # same model, other spelling
         entries += [entry(n, 'light', 'light_checked') for n in range(2, 6)]
         self.assertIn('audit', decide(entries)['reason'])
         entries.append(entry(6, 'full', 'failed'))

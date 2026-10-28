@@ -4,6 +4,9 @@
   links <url> [--match WORD ...]   every link on the page, in its same-origin scripts and in linked Google Docs,
                                    with the text around it; links near a --match word come first
   fetch <url> --out DIR            download one file; Google Drive/Docs/Slides links become their export URL
+  pdf <file> --out DIR [--render 3,5-7]
+                                   pages.txt with every physical page's text under [page N] markers, and JPEG
+                                   renders of the listed pages (pdf_page images for the notes); needs PyMuPDF
 
 Course sites often render their schedule with JavaScript, so a slides link may exist only inside a script bundle,
 and a Google Doc's plain-text export drops its hyperlinks. Reading the page as text misses both; this does not.
@@ -140,14 +143,49 @@ def fetch(args):
                       'truncated': len(body) >= FILE_LIMIT, 'sha256': hashlib.sha256(body).hexdigest()}, indent=2))
 
 
+def page_list(spec, total):
+    pages = set()
+    for part in filter(None, (spec or '').split(',')):
+        a, _, b = part.partition('-')
+        pages.update(range(int(a), int(b or a) + 1))
+    bad = sorted(n for n in pages if not 1 <= n <= total)
+    if bad:
+        raise ValueError(f'pages {bad} are outside 1-{total}')
+    return sorted(pages)
+
+
+def pdf(args):
+    try:
+        import pymupdf
+    except ImportError:
+        raise ValueError('PyMuPDF is missing. Install it next to the run, then rerun with it on the path:\n'
+                         '  python3 -m pip install --target <run>/.deps pymupdf\n'
+                         '  PYTHONPATH=<run>/.deps python3 materials.py pdf ...') from None
+    doc = pymupdf.open(args.file)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    text = ''.join(f'[page {i}]\n{page.get_text()}\n' for i, page in enumerate(doc, 1))
+    (out / 'pages.txt').write_text(text, encoding='utf-8')
+    images = []
+    for n in page_list(args.render, len(doc)):
+        path = out / f'page-{n:03d}.jpg'
+        doc[n - 1].get_pixmap(dpi=args.dpi).save(str(path), jpg_quality=85)
+        images.append(str(path))
+    print(json.dumps({'file': args.file, 'pages': len(doc), 'text': str(out / 'pages.txt'), 'images': images,
+                      'empty_text_pages': [i for i, page in enumerate(doc, 1) if not page.get_text().strip()],
+                      'note': 'Pages without text are images or scans: look at their renders instead of trusting pages.txt'}, indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest='command', required=True)
     lk = sub.add_parser('links'); lk.add_argument('url'); lk.add_argument('--match', nargs='*', help='lecture title, speaker, date')
     ft = sub.add_parser('fetch'); ft.add_argument('url'); ft.add_argument('--out', required=True); ft.add_argument('--name')
+    pd = sub.add_parser('pdf'); pd.add_argument('file'); pd.add_argument('--out', required=True)
+    pd.add_argument('--render', help='physical pages to render as JPEG, e.g. 3,5-7'); pd.add_argument('--dpi', type=int, default=150)
     args = parser.parse_args()
     try:
-        {'links': links, 'fetch': fetch}[args.command](args)
+        {'links': links, 'fetch': fetch, 'pdf': pdf}[args.command](args)
     except (ValueError, OSError) as exc:
         parser.exit(1, f'Error: {exc}\n')
 

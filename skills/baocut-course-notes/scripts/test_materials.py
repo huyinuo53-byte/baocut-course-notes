@@ -20,6 +20,9 @@ class LinksTest(unittest.TestCase):
         self.assertEqual(m.kind('https://arxiv.org/abs/2401.1'), 'paper')
         self.assertEqual(m.doc_export('https://docs.google.com/document/d/abc_1/edit'), 'https://docs.google.com/document/d/abc_1/export?format=html')
         self.assertIsNone(m.doc_export('https://example.org/x.pdf'))
+        self.assertEqual(m.page_list('3,5-7', 10), [3, 5, 6, 7])
+        with self.assertRaisesRegex(ValueError, 'outside'):
+            m.page_list('9-11', 10)
 
 
 if __name__ == '__main__':

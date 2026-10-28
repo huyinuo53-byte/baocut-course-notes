@@ -388,17 +388,23 @@ def record(args, run, report, result):
     path = safe_path(args.ledger)
     ledger = read_json(path) if path.exists() else {'schema_version': 1, 'entries': []}
     entry = {'at': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'run': str(run),
-             'writer_model': report['writer_model'], 'skill_version': args.skill_version, 'source_type': args.source_type,
+             'writer_model': model_id(report['writer_model']), 'skill_version': args.skill_version, 'source_type': args.source_type,
              'mode': result.get('mode', 'full'), 'status': result['status'],
              'precision': result['precision'], 'recall': result['recall']}
     ledger['entries'] = [e for e in ledger['entries'] if e['run'] != entry['run']] + [entry]
     write(path, dump(ledger) + '\n')
 
 
+def model_id(name):
+    """'Grok 4.7-High' and 'grok-4.7-high' are the same ledger key."""
+    return re.sub(r'\s+', '-', (name or '').strip().lower())
+
+
 def decide(entries, writer, skill_version, source_type, every=AUDIT_EVERY):
     """Full eval to approve a new combination, every `every`th lesson, and until a failed audit passes again."""
     combo = 'this writer model + skill version + source type'
-    mine = sorted((e for e in entries if (e['writer_model'], e['skill_version'], e['source_type']) == (writer, skill_version, source_type)),
+    key = (model_id(writer), skill_version, source_type)
+    mine = sorted((e for e in entries if (model_id(e['writer_model']), e['skill_version'], e['source_type']) == key),
                   key=lambda e: e['at'])
     full = [i for i, e in enumerate(mine) if e['mode'] == 'full']
     if not full:
