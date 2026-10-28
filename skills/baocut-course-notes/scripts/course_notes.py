@@ -74,9 +74,10 @@ def log_stage(run_dir, stage, status, detail='', evidence=None):
 def chunks(args):
     src = safe_path(args.input)
     out = safe_path(args.out)
-    rows = read_json(src).get('sentences')
+    data = read_json(src)
+    rows = data.get('sentences') or data.get('segments')  # older bcut-cli exports vs BaoCut 3.x transcript JSON
     if not rows:
-        raise ValueError('Expected nonempty BaoCut export sentences')
+        raise ValueError('Expected nonempty BaoCut export sentences or segments')
     seen, normalized = set(), []
     for r in rows:
         ident = r['id']
