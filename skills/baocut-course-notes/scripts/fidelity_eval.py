@@ -490,6 +490,10 @@ def review(args):
     model = args.reviewer_model or REVIEWERS[cli]
     if family(model) == family(args.writer_model):
         raise ValueError(f'{model} is the same family as the writer {args.writer_model}; pick the other CLI with --reviewer')
+    packet = read_json(d / 'precision/items.json') if (d / 'precision/items.json').exists() else {}
+    if not args.update and packet.get('mode') != 'light' and not (d / 'author/PROMPT.md').exists():
+        raise ValueError(f'{d} has no recall packet, so it cannot stand alone as a full eval; '
+                         'pass --update <run>/fidelity-eval.json to fold it into the existing eval')
     skip = set()
     if args.update and (d / 'author/PROMPT.md').exists() and not (d / 'author/questions.json').exists():
         # Incremental round: re-ask only the stale questions instead of authoring new ones.

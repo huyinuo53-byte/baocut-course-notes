@@ -287,6 +287,10 @@ class EvalPipelineTest(RunDir):
         delta = self.root / 'delta'
         quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=delta, per_section=2, seed=0, questions=20,
                                only_stale=self.root / 'fidelity-eval.json', light=False))
+        shutil.rmtree(delta / 'author'); shutil.rmtree(delta / 'answer')
+        with self.assertRaisesRegex(ValueError, '--update'):
+            review(dir=delta)  # a precision-only packet only makes sense folded into the existing eval
+        self.assertEqual(len(calls), 4)
         review(dir=delta, update=self.root / 'fidelity-eval.json')
         self.assertEqual([x[2] for x in calls[4:]], ['precision'])
         self.assertEqual(self.score()[1]['status'], 'passed')
