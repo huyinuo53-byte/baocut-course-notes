@@ -251,7 +251,7 @@ class EvalPipelineTest(RunDir):
             elif prompt_file == 'GRADE.md':
                 c.write(workdir / 'grades.json', json.dumps([{'id': f'q{n:02d}', 'verdict': 'correct'} for n in range(1, 21)]))
             elif workdir.name == 'author':
-                c.write(workdir / 'questions.json', json.dumps([{'id': f'q{n:02d}', 'question': '问', 'expected': '答', 'evidence': 'a',
+                c.write(workdir / 'questions.json', json.dumps([{'id': f'q{n:02d}', 'question': '问', 'expected': ['答'], 'evidence': 'a',
                                                                   'from': 'visual' if n == 1 else 'transcript'} for n in range(1, 21)]))
             else:
                 c.write(workdir / 'answers.json', json.dumps([{'id': f'q{n:02d}', 'answer': '答', 'found_in': 's1:p0'} for n in range(1, 21)]))
@@ -276,6 +276,10 @@ class EvalPipelineTest(RunDir):
         self.assertEqual((report['precision']['reviewer'], report['recall']['answerer']), ('independent_agent', 'independent_agent'))
         self.assertEqual(self.score()[1]['status'], 'passed')
         review()  # resumable: every output exists, nothing runs again
+        # Compound questions (many points, long expected answers) are rejected so the author writes them again.
+        self.assertEqual(fe.question_problems([{'id': 'q1', 'expected': ['a']}, {'id': 'q2', 'expected': 'one long string'},
+                                               {'id': 'q3', 'expected': ['a', 'b', 'c', 'd']}, {'id': 'q4', 'expected': ['x' * 200]}]),
+                         ['q2', 'q3', 'q4'])
         self.assertEqual(len(calls), 4)
         # An incremental round with no stale questions re-checks precision only.
         self.notes['sections'][1]['takeaway'] = '先核对样本与单位。'

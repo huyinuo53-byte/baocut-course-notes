@@ -303,8 +303,8 @@
     },
     {
       "path": "skills/baocut-course-notes/references/fidelity-eval.md",
-      "bytes": 10145,
-      "sha256": "d7bbe2a13c761ee88e862750398cb4ceb7a78d08cbb30bec4d0ac2dca3c1ee85"
+      "bytes": 10994,
+      "sha256": "91d2cf61b396fdaf3642cf4a8731a2bc9e7a4540bee148660c199db6db941b91"
     },
     {
       "path": "skills/baocut-course-notes/references/layered-reading.md",
@@ -348,8 +348,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/fidelity_eval.py",
-      "bytes": 37880,
-      "sha256": "740abd981229b822d23d7cf2649935847c564971604cdb999bf6d6184791d1a1"
+      "bytes": 39086,
+      "sha256": "6952ac981a2ab1152d12e57e8f7ff9afdb00ae5b57bf4193f3ebc0e41c3baa6d"
     },
     {
       "path": "skills/baocut-course-notes/scripts/frames.py",
@@ -408,8 +408,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_pipeline.py",
-      "bytes": 21445,
-      "sha256": "cb8d91ca8ed128ab925e73bf27281b2a153657ced603868c74ef06d86ccf58c4"
+      "bytes": 21865,
+      "sha256": "f7db3432fd93bb19c42117a3c31a6c1ed3ebbca579983c6b28109ea8bbfcc63a"
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_reading_layout.py",

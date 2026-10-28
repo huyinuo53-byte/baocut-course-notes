@@ -151,8 +151,10 @@ def score(report, notes, limits=None):
     recall = report.get('recall') or {}
     r_items = recall.get('items') or []
     for item in r_items:
-        for key in ('id', 'question', 'expected', 'evidence'):
-            if not isinstance(item.get(key), str) or not item[key].strip():
+        expected = item.get('expected')
+        expected = ' '.join(expected) if isinstance(expected, list) and all(isinstance(x, str) for x in expected) else expected
+        for value in (item.get('id'), item.get('question'), expected, item.get('evidence')):
+            if not isinstance(value, str) or not value.strip():
                 raise ValueError('Recall item needs id, question, expected answer and transcript/frame evidence')
         if item.get('verdict') not in RECALL or item.get('from') not in ('transcript', 'visual'):
             raise ValueError('Invalid recall verdict/from for ' + item['id'])
@@ -303,6 +305,19 @@ def prepare(args):
     write(out / 'RUN.md', RUN_MD.format(dir=out, notes=notes_path))
     print(dump({'packets': str(out), 'precision_items': len(items), 'sections_with_context': len(sections),
                 'next': 'Run the author and precision packets with a different model family than the writer; see RUN.md'}))
+
+
+MAX_POINT_CHARS = 160
+
+
+def question_problems(qs):
+    """Questions that break the author contract: one topic, 1-3 short key points."""
+    bad = []
+    for q in qs:
+        pts = q.get('expected')
+        if not isinstance(pts, list) or not 1 <= len(pts) <= 3 or not all(isinstance(x, str) and 0 < len(x) <= MAX_POINT_CHARS for x in pts):
+            bad.append(q.get('id', '?'))
+    return bad
 
 
 def blind(args):
@@ -503,7 +518,9 @@ def review(args):
             ok = (d / output).exists()
             if ok:
                 try:
-                    read_json(d / output)
+                    data = read_json(d / output)
+                    if name == 'author' and question_problems(data.get('questions', data) if isinstance(data, dict) else data):
+                        raise ValueError('questions break the 1-3 short key points contract')
                 except ValueError:
                     (d / output).unlink()
                     ok = False
@@ -567,7 +584,10 @@ Write recall questions from the lecture itself. Use only transcript.txt in this 
 
 Write at least {n} questions covering beginning, middle and end; test definitions, conditions, numbers, cases,
 the lecturer's explicit positions and Q&A. At least 3 must be answerable only from frames (code, numbers, slides).
-Write questions.json here: [{{"id": "q01", "question": "...", "expected": "1-3 gradable key points", "evidence": "sentence ids or frame file", "from": "transcript|visual"}}]
+Write questions.json here: [{{"id": "q01", "question": "...", "expected": ["key point", "..."], "evidence": "sentence ids or frame file", "from": "transcript|visual"}}]
+Each question asks about one thing. `expected` lists 1-3 key points, each one short fact (at most ~25 words);
+split a question that needs more into several questions. Grading checks exactly these points, so do not list
+details you would not fail an answer for.
 You will grade answers later with GRADE.md.
 """
 ANSWER_PROMPT = """# Recall answerer
@@ -577,8 +597,9 @@ Write answers.json here: [{"id": "q01", "answer": "...", "found_in": "ref labels
 """
 GRADE_PROMPT = """# Grade recall answers
 
-Compare ../answer/answers.json with your questions.json. For each id judge: correct (all key points), partial,
-missing (not found), wrong (contradicts). Write grades.json here: [{"id": "q01", "verdict": "...", "note": "..."}]
+Compare ../answer/answers.json with your questions.json. For each id judge against the listed `expected` points
+only: correct (every point present, any wording), partial (some points), missing (not found), wrong (contradicts
+a point). Details outside the listed points never lower a grade. Write grades.json here: [{"id": "q01", "verdict": "...", "note": "..."}]
 """
 RUN_MD = """# Fidelity eval with external models
 
