@@ -248,8 +248,8 @@
     },
     {
       "path": "skills/baocut-course-notes/SKILL.md",
-      "bytes": 8211,
-      "sha256": "61f2e1137e118659d4b9a807183f91a201f7bdecc018d100fd897d77e45a8cce"
+      "bytes": 8898,
+      "sha256": "2525e524654fe091cdc3ec1e609a9e50c6e046028dc656bdb84f6b1c88368c6b"
     },
     {
       "path": "skills/baocut-course-notes/agents/openai.yaml",
@@ -303,8 +303,8 @@
     },
     {
       "path": "skills/baocut-course-notes/references/fidelity-eval.md",
-      "bytes": 6657,
-      "sha256": "b96ecd081a05824affa63781dcdb4b122956de80d8e39f227858afd6b2b32850"
+      "bytes": 9168,
+      "sha256": "157c62b13773a2e187afe37aa3e8d8e6d0a540e1d72017a28723ff73d2e81601"
     },
     {
       "path": "skills/baocut-course-notes/references/layered-reading.md",
@@ -333,8 +333,8 @@
     },
     {
       "path": "skills/baocut-course-notes/references/visual-coverage.md",
-      "bytes": 2659,
-      "sha256": "ad4ca8dde6f5a5c52b06e958f4b4a5a6a490c9370a5efec0033e607142d648b3"
+      "bytes": 2719,
+      "sha256": "6e9a99dc6c09e0f7c4882f5997332b01b46bf45850afcca1fa3de53e4e6d3940"
     },
     {
       "path": "skills/baocut-course-notes/scripts/check_html.py",
@@ -348,8 +348,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/fidelity_eval.py",
-      "bytes": 23182,
-      "sha256": "a742f2414ed27939d30a12853cb479fc3b7a20fdd11d57b4c9c1310f0ccdcb18"
+      "bytes": 30995,
+      "sha256": "342361012a55e2d548e14f63d4bf96c1135f3898167bd58d83c249673957ce82"
     },
     {
       "path": "skills/baocut-course-notes/scripts/frames.py",
@@ -398,8 +398,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_pipeline.py",
-      "bytes": 14178,
-      "sha256": "408f3d9204cd4aa5523ba8766c672e66804c621aa8d97dfe1d842015cee02b1a"
+      "bytes": 17815,
+      "sha256": "e2e7d55067fee9456baaea0975f40dc9678250375be9201bef6aa7c6786bef40"
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_reading_layout.py",

@@ -1,6 +1,6 @@
 ---
 name: baocut-course-notes
-description: 把课程视频或已有转写整理成给人阅读学习的高保真课堂笔记：一张课程地图、每个知识点一张图解卡片、可展开的完整笔记（时间码、原帧、讲义与外部来源），并用另一个模型做的精度/召回评测证明保真。默认从原始转写和视频重写。可用 BaoCut 取得转写和画面，支持多课批量与断点恢复。字幕编辑、翻译或剪辑不单独触发。
+description: 把课程视频或已有转写整理成给人阅读学习的高保真课堂笔记：一张课程地图、每个知识点一张图解卡片、可展开的完整笔记（时间码、原帧、讲义与外部来源），并由另一个模型评测保真：生产中每课做顶层轻检，全量精度/召回评测用于准入和抽检。默认从原始转写和视频重写。可用 BaoCut 取得转写和画面，支持多课批量与断点恢复。字幕编辑、翻译或剪辑不单独触发。
 ---
 
 # BaoCut 课堂笔记
@@ -36,13 +36,15 @@ description: 把课程视频或已有转写整理成给人阅读学习的高保�
    `python3 <skill>/scripts/course_notes.py validate --notes <run>/notes.json --index <run>/chunks/index.json`
    一次列出全部问题和字段路径（覆盖、引用、占位符、图解、编码），改到 `passed` 再渲染：
    `python3 <skill>/scripts/course_notes.py render --notes <run>/notes.json --index <run>/chunks/index.json --out <run>/课堂笔记.html`
-8. **保真评测（外部模型）**。
-   `python3 <skill>/scripts/fidelity_eval.py prepare --notes <run>/notes.json --index <run>/chunks/index.json --out <run>/eval`
-   生成出题/作答/精度三份自包含评审包和 `RUN.md`（含 codex / cursor-agent 命令）。用**与写作模型不同家族**的模型作为独立进程运行，`blind`、`merge` 汇总成 `fidelity-eval.json` 并记录各角色模型；不要在自己的会话里用子代理来回传话。未达标就改笔记、记 issue，然后只复核变化的条目：`stale` → `prepare --only-stale` → `merge --update`。
+8. **保真评测（外部模型）**。先问台账本课跑轻检还是全量：
+   `python3 <skill>/scripts/fidelity_eval.py mode --ledger <课程根>/eval-ledger.json --writer-model <写作模型> --skill-version <版本> --source-type <素材类型>`
+   - `light`（日常课）：`prepare ... --out <run>/eval --light` 只生成顶层（takeaway、图解、地图）精度包，用**不同家族**模型跑一次，`merge`。任何 `unsupported`/`distorted` 都要改；`partial` 可交付但写进 known_gaps。
+   - `full`（新组合准入、每 5 课一次抽检、上次抽检未过）：`prepare ... --out <run>/eval` 生成出题/作答/精度三份包，按 `RUN.md` 跑完、`blind`、`merge`。用户要求或轻检两轮仍不过时也跑全量。
+   最后 `score ... --ledger <同上> --skill-version <版本> --source-type <类型>` 把结果记进台账。评审一律作为独立进程运行，不要在自己的会话里用子代理来回传话。改了笔记只复核变化的条目：`stale` → `prepare --only-stale`（轻检加 `--light`）→ `merge --update`。细则见 [保真评测](references/fidelity-eval.md)。
 9. **页面检查**。
    `python3 <skill>/scripts/check_html.py <run>/课堂笔记.html`
    静态检查（锚点、本地链接、外部资源、图片解码、阅读模式控件）总会做；找到 headless Chrome 时再在 390/1280 宽度检查溢出、脚本错误、坏图并操作切换/展开、各截一张图，结果写入 manifest `status.browser_check`。没有浏览器就如实写 `static_only`，不要尝试其他浏览器或截屏方案。
-10. **冻结并交付**。`python3 <skill>/scripts/manifest.py freeze --run <run> --reason "<为什么出这一版>" --delivered`。交付时按视频给出文件路径、评测分数（含评审模型）和仍存在的缺口；没做的检查直接说没做。
+10. **冻结并交付**。`python3 <skill>/scripts/manifest.py freeze --run <run> --reason "<为什么出这一版>" --delivered`。交付时按视频给出文件路径、评测分数（含评审模型；轻检要写明“召回未测”并附该组合最近一次全量评测的分数）和仍存在的缺口；没做的检查直接说没做。
 
 ## 参考文档：何时读
 

@@ -170,14 +170,16 @@ class EvalPipelineTest(RunDir):
         quiet(fe.merge, Args(notes=self.root / 'notes.json', dir=packets, out=self.root / 'fidelity-eval.json', update=None, **m))
         return json.loads((self.root / 'fidelity-eval.json').read_text(encoding='utf-8'))
 
-    def score(self):
-        code, out = quiet(fe.score_cmd, Args(notes=self.root / 'notes.json', eval=self.root / 'fidelity-eval.json', **fe.DEFAULTS))
+    def score(self, **ledger):
+        ledger = {'skill_version': None, 'source_type': None, **ledger}
+        code, out = quiet(fe.score_cmd, Args(notes=self.root / 'notes.json', eval=self.root / 'fidelity-eval.json',
+                                                  ledger=None, **fe.DEFAULTS, **ledger))
         return code, json.loads(out)
 
     def test_packets_merge_score_and_incremental_review(self):
         self.save()
         packets = self.root / 'packets'
-        quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=packets, per_section=2, seed=0, questions=20, only_stale=None))
+        quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=packets, per_section=2, seed=0, questions=20, only_stale=None, light=False))
         items = json.loads((packets / 'precision/items.json').read_text(encoding='utf-8'))
         refs = {i['ref'] for i in items['items']}
         self.assertTrue({'map', 's1:takeaway', 's1:visual', 's2:takeaway'} <= refs)
@@ -197,17 +199,64 @@ class EvalPipelineTest(RunDir):
         self.assertEqual((code, result['status'], result['stale_precision'], result['stale_recall']), (2, 'stale', ['s2:takeaway'], []))
         delta = self.root / 'delta'
         quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=delta, per_section=2, seed=0, questions=20,
-                               only_stale=self.root / 'fidelity-eval.json'))
+                               only_stale=self.root / 'fidelity-eval.json', light=False))
         self.assertEqual([i['ref'] for i in json.loads((delta / 'precision/items.json').read_text(encoding='utf-8'))['items']], ['s2:takeaway'])
         c.write(delta / 'precision/results.json', json.dumps([{'ref': 's2:takeaway', 'verdict': 'supported', 'evidence': 'b'}]))
         quiet(fe.merge, Args(notes=self.root / 'notes.json', dir=delta, out=self.root / 'fidelity-eval.json', update=self.root / 'fidelity-eval.json',
                              writer_model='grok-4.7-high', reviewer_model='gpt-6.1-sol', author_model=None, answerer_model=None))
         self.assertEqual(self.score()[1]['status'], 'passed')
 
+    def test_light_check_is_top_layer_only_and_recorded_in_ledger(self):
+        self.save()
+        packets = self.root / 'light'
+        quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=packets, per_section=2, seed=0, questions=20, only_stale=None, light=True))
+        packet = json.loads((packets / 'precision/items.json').read_text(encoding='utf-8'))
+        self.assertEqual(packet['mode'], 'light')
+        self.assertTrue(all(fe.is_top(i['ref']) for i in packet['items']))
+        self.assertEqual({i['ref']: i['context'] for i in packet['items']}['map'], 'all sections')
+        self.assertFalse(any(s['frames_to_check'] for s in packet['sections'].values()))
+        self.assertFalse((packets / 'author').exists() or (packets / 'answer').exists() or (packets / 'precision/transcript.txt').exists())
+        results = [{'ref': i['ref'], 'verdict': 'supported', 'evidence': 'a'} for i in packet['items']]
+        c.write(packets / 'precision/results.json', json.dumps(results))
+        self.assertEqual(self.merge(packets)['mode'], 'light')
+        ledger = self.root / 'eval-ledger.json'
+        code, result = quiet(fe.score_cmd, Args(notes=self.root / 'notes.json', eval=self.root / 'fidelity-eval.json', ledger=ledger,
+                                                skill_version='v1', source_type='lecture', **fe.DEFAULTS))
+        result = json.loads(result)
+        self.assertEqual((code, result['status'], result['recall']), (0, 'light_checked', None))
+        entry = json.loads(ledger.read_text(encoding='utf-8'))['entries']
+        self.assertEqual([(e['mode'], e['status'], e['writer_model']) for e in entry], [('light', 'light_checked', 'grok-4.7-high')])
+        # A reversed explainer still blocks delivery; partials ship but are listed.
+        results[1]['verdict'], results[0]['verdict'] = 'distorted', 'partial'
+        c.write(packets / 'precision/results.json', json.dumps(results))
+        self.merge(packets)
+        code, result = self.score()
+        self.assertEqual((code, result['status'], result['partial_top']), (2, 'failed', [results[0]['ref']]))
+        results[1]['verdict'] = 'supported'
+        c.write(packets / 'precision/results.json', json.dumps(results))
+        self.merge(packets, reviewer_model='cursor-grok-4.6-high')
+        self.assertEqual(self.score()[1]['status'], 'self_checked')
+
+    def test_ledger_decides_light_or_full(self):
+        def entry(n, mode, status):
+            return {'at': f'2026-10-{n:02d}', 'run': f'r{n}', 'writer_model': 'grok-4.7-high', 'skill_version': 'v1',
+                    'source_type': 'lecture', 'mode': mode, 'status': status, 'precision': 1.0, 'recall': None}
+        decide = lambda entries, **kw: fe.decide(entries, 'grok-4.7-high', kw.get('skill', 'v1'), 'lecture')
+        self.assertEqual(decide([])['mode'], 'full')
+        entries = [entry(1, 'full', 'passed')]
+        self.assertEqual(decide(entries)['mode'], 'light')
+        self.assertEqual(decide(entries, skill='v2')['mode'], 'full')  # new skill version needs its own approval
+        entries += [entry(n, 'light', 'light_checked') for n in range(2, 6)]
+        self.assertIn('audit', decide(entries)['reason'])
+        entries.append(entry(6, 'full', 'failed'))
+        self.assertEqual(decide(entries)['backfill'], ['r2', 'r3', 'r4', 'r5'])
+        entries.append(entry(7, 'full', 'passed'))
+        self.assertEqual(decide(entries)['mode'], 'light')
+
     def test_same_family_review_is_only_self_checked(self):
         self.save()
         packets = self.root / 'packets'
-        quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=packets, per_section=2, seed=0, questions=20, only_stale=None))
+        quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=packets, per_section=2, seed=0, questions=20, only_stale=None, light=False))
         self.answer_packets(packets)
         report = self.merge(packets, reviewer_model='cursor-grok-4.6-high')
         self.assertEqual(report['precision']['reviewer'], 'same_agent')

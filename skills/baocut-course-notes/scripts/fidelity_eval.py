@@ -5,12 +5,16 @@ model; this script builds their packets, merges their answers and checks binding
 and arithmetic, never the semantics.
 
   prepare --notes N --index I --out DIR      reviewer packets + RUN.md with external-CLI commands
+  prepare ... --light                        production light check: top-layer precision packet only
   blind   --dir DIR                          strip expected answers for the answerer
   merge   --notes N --dir DIR --out EVAL --writer-model M --reviewer-model R --author-model A --answerer-model B
   stale   --notes N --eval EVAL              items whose content changed since review (incremental re-review)
   score   --notes N --eval EVAL              (default when no subcommand is given)
+          [--ledger L --skill-version V --source-type T]   also record the result in the course ledger
+  mode    --ledger L --writer-model M --skill-version V --source-type T   light or full eval for the next lesson
 """
 import argparse
+import datetime as dt
 import hashlib
 import html as htmllib
 import random
@@ -25,6 +29,11 @@ PRECISION = {'supported': 1.0, 'partial': 0.5, 'unsupported': 0.0, 'distorted': 
 RECALL = {'correct': 1.0, 'partial': 0.5, 'missing': 0.0, 'wrong': 0.0}
 ROLES = ('independent_agent', 'human', 'same_agent')
 DEFAULTS = {'min_precision': 0.95, 'min_recall': 0.85, 'min_questions': 20}
+AUDIT_EVERY = 5  # in production, every 5th lesson of an approved combination gets the full eval
+
+
+def is_top(ref):
+    return ref == 'map' or bool(re.fullmatch(r's\d+:(takeaway|visual)', ref))
 
 
 def refs_in(notes):
@@ -127,6 +136,8 @@ def score(report, notes, limits=None):
     bad_top = sorted(i['ref'] for i in p_items if i['ref'] in top_layer and i['verdict'] in ('unsupported', 'distorted'))
     if bad_top:
         problems.append('Unsupported or distorted takeaway/explainer: ' + ', '.join(bad_top))
+    if report.get('mode') == 'light':
+        return light_score(precision, p_items, top_layer, problems)
     recall = report.get('recall') or {}
     r_items = recall.get('items') or []
     for item in r_items:
@@ -159,6 +170,25 @@ def score(report, notes, limits=None):
             'precision_items': len(p_items), 'recall_items': len(r_items),
             'recall_misses': misses, 'problems': problems, 'roles': roles,
             'claim': 'Scores restate reviewer judgments; they do not prove the reviewers read everything.'}
+
+
+def light_score(precision, p_items, top_layer, problems):
+    """Production check: only the top layer, judged by another model family; recall is not measured."""
+    if precision.get('reviewer') not in ROLES:
+        raise ValueError('reviewer must be one of ' + ', '.join(ROLES))
+    if problems:
+        status = 'failed'
+    elif precision['reviewer'] == 'same_agent':
+        status = 'self_checked'
+    else:
+        status = 'light_checked'
+    p_score = round(sum(PRECISION[i['verdict']] for i in p_items) / len(p_items), 4) if p_items else None
+    return {'status': status, 'mode': 'light', 'precision': p_score, 'recall': None,
+            'precision_items': len(p_items), 'recall_items': 0,
+            'partial_top': sorted(i['ref'] for i in p_items if i['ref'] in top_layer and i['verdict'] == 'partial'),
+            'problems': problems, 'roles': [precision['reviewer']],
+            'claim': 'Light check: top-layer precision only. Recall and full-note precision were not measured; '
+                     'report the latest full eval of this writer model + skill version + source type alongside.'}
 
 
 FAMILIES = {'opus': 'claude', 'sonnet': 'claude', 'haiku': 'claude', 'fable': 'claude', 'claude': 'claude',
@@ -225,6 +255,8 @@ def prepare(args):
         new_top = {r for r in refs if r == 'map' or re.fullmatch(r's\d+:(takeaway|visual)', r)} - \
             {i['ref'] for i in read_json(args.only_stale).get('precision', {}).get('items', [])}
         refs = sorted(changed | new_top)
+    if args.light:
+        refs = [r for r in refs if is_top(r)]
     # Self-test answers are checked against the section they point back to.
     quiz_section = {f'q{j}': t.get('section') for j, t in enumerate(notes.get('self_test', []), 1)}
     sections = {}
@@ -239,9 +271,16 @@ def prepare(args):
     items = []
     for r in refs:
         sec = re.match(r's(\d+):', r)
-        context = f's{sec[1]}' if sec else (f's{quiz_section[r]}' if quiz_section.get(r) else 'transcript.txt')
+        context = f's{sec[1]}' if sec else (f's{quiz_section[r]}' if quiz_section.get(r) else 'all sections' if args.light else 'transcript.txt')
         items.append({'ref': r, 'hash': hashes[r], 'context': context, 'text': unit_text(notes, r, run)})
-    write(out / 'precision/items.json', dump({'sections': sections, 'items': items}) + '\n')
+    write(out / 'precision/items.json', dump({'mode': 'light' if args.light else 'full', 'sections': sections, 'items': items}) + '\n')
+    if args.light:
+        # Every section has a takeaway, so `sections` already carries the whole transcript; no frames, no recall packets.
+        write(out / 'precision/PROMPT.md', LIGHT_PROMPT)
+        write(out / 'RUN.md', LIGHT_RUN_MD.format(dir=out, notes=notes_path))
+        print(dump({'packets': str(out), 'mode': 'light', 'precision_items': len(items),
+                    'next': 'Run precision/ once with a different model family than the writer; see RUN.md'}))
+        return
     write(out / 'precision/PROMPT.md', PRECISION_PROMPT)
     lines = [f"[{x['id']} {stamp(x['start'])}] {x['text']}" for x in sorted(rows.values(), key=lambda r: r['start'])]
     write(out / 'author/transcript.txt', '\n'.join(lines) + '\n')
@@ -271,12 +310,15 @@ def merge(args):
     hashes = item_hashes(notes, run)
     old = read_json(args.update) if args.update else {}
     precision, recall = dict(old.get('precision', {})), dict(old.get('recall', {}))
+    packet = d / 'precision/items.json'
+    mode = old.get('mode', 'full') if args.update else (read_json(packet).get('mode', 'full') if packet.exists() else 'full')
     if (d / 'precision/results.json').exists():
         res = read_json(d / 'precision/results.json')
         new = {i['ref']: dict(i, hash=hashes.get(i['ref'])) for i in (res.get('items', res) if isinstance(res, dict) else res)}
         precision.update(items=[i for i in precision.get('items', []) if i['ref'] not in new] + list(new.values()),
                          reviewer=role(args.reviewer_model, args.writer_model), reviewer_model=args.reviewer_model,
-                         method=precision.get('method', 'prepare packets: all takeaways/explainers + per-section sample') + f'; {len(new)} judged in latest round')
+                         method=precision.get('method', 'prepare --light: all takeaways/explainers + map' if mode == 'light' else
+                                              'prepare packets: all takeaways/explainers + per-section sample') + f'; {len(new)} judged in latest round')
     if (d / 'author/questions.json').exists():
         qs = read_json(d / 'author/questions.json')
         qs = qs.get('questions', qs) if isinstance(qs, dict) else qs
@@ -290,7 +332,7 @@ def merge(args):
         recall.update(items=[i for i in recall.get('items', []) if i['id'] not in new] + list(new.values()),
                       question_author=role(args.author_model, args.writer_model), answerer=role(args.answerer_model, args.writer_model),
                       author_model=args.author_model, answerer_model=args.answerer_model)
-    report = {'schema_version': 1, 'notes_sha256': hashlib.sha256(notes_path.read_bytes()).hexdigest(),
+    report = {'schema_version': 1, 'mode': mode, 'notes_sha256': hashlib.sha256(notes_path.read_bytes()).hexdigest(),
               'writer_model': args.writer_model, 'precision': precision, 'recall': recall}
     write(args.out, dump(report) + '\n')
     print(dump(score(report, notes)))
@@ -324,7 +366,50 @@ def score_cmd(args):
     from course_notes import log_stage
     log_stage(notes_path.parent, 'fidelity_eval', 'failed' if result['status'] == 'failed' else 'completed',
               f"{result['status']}: precision {result['precision']}, recall {result['recall']}", str(safe_path(args.eval)))
+    if args.ledger:
+        record(args, notes_path.parent, report, result)
     return 2 if result['status'] == 'failed' else 0
+
+
+def record(args, run, report, result):
+    """Upsert this run's latest score into the course ledger, so rescoring after fixes replaces the entry."""
+    if not (args.skill_version and args.source_type and report.get('writer_model')):
+        raise ValueError('Recording in the ledger needs --skill-version, --source-type and an eval with writer_model')
+    path = safe_path(args.ledger)
+    ledger = read_json(path) if path.exists() else {'schema_version': 1, 'entries': []}
+    entry = {'at': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'run': str(run),
+             'writer_model': report['writer_model'], 'skill_version': args.skill_version, 'source_type': args.source_type,
+             'mode': result.get('mode', 'full'), 'status': result['status'],
+             'precision': result['precision'], 'recall': result['recall']}
+    ledger['entries'] = [e for e in ledger['entries'] if e['run'] != entry['run']] + [entry]
+    write(path, dump(ledger) + '\n')
+
+
+def decide(entries, writer, skill_version, source_type, every=AUDIT_EVERY):
+    """Full eval to approve a new combination, every `every`th lesson, and until a failed audit passes again."""
+    combo = 'this writer model + skill version + source type'
+    mine = sorted((e for e in entries if (e['writer_model'], e['skill_version'], e['source_type']) == (writer, skill_version, source_type)),
+                  key=lambda e: e['at'])
+    full = [i for i, e in enumerate(mine) if e['mode'] == 'full']
+    if not full:
+        return {'mode': 'full', 'reason': f'approval: no full eval yet for {combo}'}
+    last = mine[full[-1]]
+    if last['status'] != 'passed':
+        passed = [i for i in full if mine[i]['status'] == 'passed']
+        since = mine[passed[-1] + 1:] if passed else mine
+        return {'mode': 'full', 'reason': f"latest full eval ({last['run']}) is {last['status']}; stay on full evals until one passes",
+                'backfill': [e['run'] for e in since if e['mode'] == 'light']}
+    light = sum(1 for e in mine[full[-1] + 1:] if e['mode'] == 'light')
+    if light >= every - 1:
+        return {'mode': 'full', 'reason': f'audit: {light} light-checked lessons since the latest full eval (every {every}th is full)'}
+    return {'mode': 'light', 'reason': f'{combo} passed a full eval; {light} light-checked lessons since',
+            'latest_full': {k: last[k] for k in ('run', 'at', 'precision', 'recall')}}
+
+
+def mode_cmd(args):
+    path = safe_path(args.ledger)
+    entries = read_json(path)['entries'] if path.exists() else []
+    print(dump(decide(entries, args.writer_model, args.skill_version, args.source_type, args.every)))
 
 
 PRECISION_PROMPT = """# Precision review (packet: items.json)
@@ -340,6 +425,21 @@ in this folder and the image files listed under frames_to_check. Each item's `co
 - distorted: contradicts the evidence
 
 Write results.json in this folder: [{"ref": "...", "verdict": "...", "evidence": "sentence ids or frame file", "note": "..."}]
+Keep each `ref` exactly as given. Do not open notes.json, the HTML page, or files outside this folder.
+"""
+LIGHT_PROMPT = """# Light precision review (packet: items.json)
+
+You check the top layer of classroom notes (section takeaways, explainer cards, course map) against the lecture.
+You did not write them. Read only items.json in this folder. Each item's `context` names the section in `sections`
+whose transcript lines to judge it against; the course map (`all sections`) is judged against every section.
+Explainer text is given as its labels; check each claim and each arrow or comparison it implies. Judge each `text`:
+
+- supported: fully backed by the transcript
+- partial: partly backed, a condition dropped, or strength or tone changed
+- unsupported: nothing in the transcript backs it
+- distorted: contradicts the transcript (reversed direction, cause and effect swapped, wrong number)
+
+Write results.json in this folder: [{"ref": "...", "verdict": "...", "evidence": "sentence ids", "note": "..."}]
 Keep each `ref` exactly as given. Do not open notes.json, the HTML page, or files outside this folder.
 """
 AUTHOR_PROMPT = """# Recall question author
@@ -379,6 +479,18 @@ same-family review to self_checked. Each packet is self-contained, so reviewers 
 After editing notes do not rerun everything: `stale` lists changed items, `prepare --only-stale <eval>` builds a
 delta precision packet, re-answer and re-grade only the stale recall ids, then `merge --update <run>/fidelity-eval.json`.
 """
+LIGHT_RUN_MD = """# Light fidelity check (production)
+
+Packet: {dir}/precision. One reviewer, one run, a model family different from the writer's, for example:
+   codex exec -m gpt-6.1-sol -s workspace-write --skip-git-repo-check -C {dir}/precision "$(cat {dir}/precision/PROMPT.md)"
+   cursor-agent -p --force --trust --model grok-4.7-high --workspace {dir}/precision "$(cat {dir}/precision/PROMPT.md)"
+Then:
+   python3 fidelity_eval.py merge --notes {notes} --dir {dir} --out <run>/fidelity-eval.json --writer-model <writer> --reviewer-model <reviewer>
+   python3 fidelity_eval.py score --notes {notes} --eval <run>/fidelity-eval.json --ledger <ledger> --skill-version <v> --source-type <type>
+
+Any unsupported or distorted item fails: fix the notes, then `prepare --light --only-stale <run>/fidelity-eval.json`
+and `merge --update`. Partial items may ship; list them in known_gaps.
+"""
 
 
 def main():
@@ -390,18 +502,24 @@ def main():
     sc = sub.add_parser('score'); sc.add_argument('--notes', required=True); sc.add_argument('--eval', required=True)
     for key, value in DEFAULTS.items():
         sc.add_argument('--' + key.replace('_', '-'), type=type(value), default=value)
+    for flag in ('--ledger', '--skill-version', '--source-type'):
+        sc.add_argument(flag)
     pr = sub.add_parser('prepare'); pr.add_argument('--notes', required=True); pr.add_argument('--index', required=True)
     pr.add_argument('--out', required=True); pr.add_argument('--per-section', type=int, default=2); pr.add_argument('--seed', type=int, default=0)
     pr.add_argument('--questions', type=int, default=DEFAULTS['min_questions']); pr.add_argument('--only-stale', metavar='EVAL')
+    pr.add_argument('--light', action='store_true', help='top-layer precision packet only (production)')
     bl = sub.add_parser('blind'); bl.add_argument('--dir', required=True)
     mg = sub.add_parser('merge'); mg.add_argument('--notes', required=True); mg.add_argument('--dir', required=True); mg.add_argument('--out', required=True)
     mg.add_argument('--update', metavar='EVAL'); mg.add_argument('--writer-model', required=True)
     for flag in ('--reviewer-model', '--author-model', '--answerer-model'):
         mg.add_argument(flag)
     st = sub.add_parser('stale'); st.add_argument('--notes', required=True); st.add_argument('--eval', required=True)
+    md = sub.add_parser('mode'); md.add_argument('--ledger', required=True); md.add_argument('--writer-model', required=True)
+    md.add_argument('--skill-version', required=True); md.add_argument('--source-type', required=True)
+    md.add_argument('--every', type=int, default=AUDIT_EVERY)
     args = parser.parse_args(argv)
     try:
-        code = {'score': score_cmd, 'prepare': prepare, 'blind': blind, 'merge': merge, 'stale': stale}[args.command](args)
+        code = {'score': score_cmd, 'prepare': prepare, 'blind': blind, 'merge': merge, 'stale': stale, 'mode': mode_cmd}[args.command](args)
         if code:
             parser.exit(code)
     except (ValueError, KeyError, OSError, TypeError) as exc:
