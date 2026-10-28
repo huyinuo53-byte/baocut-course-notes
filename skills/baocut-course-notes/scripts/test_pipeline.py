@@ -237,6 +237,56 @@ class EvalPipelineTest(RunDir):
         self.merge(packets, reviewer_model='cursor-grok-4.6-high')
         self.assertEqual(self.score()[1]['status'], 'self_checked')
 
+    def test_review_runs_each_role_and_merges(self):
+        self.save()
+        packets = self.root / 'packets'
+        quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=packets, per_section=2, seed=0, questions=20, only_stale=None, light=False))
+        calls = []
+
+        def fake(cli, model, workdir, prompt_file, log, timeout):
+            calls.append((cli, model, workdir.name, prompt_file))
+            if workdir.name == 'precision':
+                items = json.loads((workdir / 'items.json').read_text(encoding='utf-8'))['items']
+                c.write(workdir / 'results.json', json.dumps([{'ref': i['ref'], 'verdict': 'supported', 'evidence': 'a'} for i in items]))
+            elif prompt_file == 'GRADE.md':
+                c.write(workdir / 'grades.json', json.dumps([{'id': f'q{n:02d}', 'verdict': 'correct'} for n in range(1, 21)]))
+            elif workdir.name == 'author':
+                c.write(workdir / 'questions.json', json.dumps([{'id': f'q{n:02d}', 'question': '问', 'expected': '答', 'evidence': 'a',
+                                                                  'from': 'visual' if n == 1 else 'transcript'} for n in range(1, 21)]))
+            else:
+                c.write(workdir / 'answers.json', json.dumps([{'id': f'q{n:02d}', 'answer': '答', 'found_in': 's1:p0'} for n in range(1, 21)]))
+            return {'inputTokens': 10}
+
+        original = fe.run_role
+        fe.run_role = fake
+        self.addCleanup(setattr, fe, 'run_role', original)
+        review = lambda **kw: quiet(fe.review, Args(**{'notes': self.root / 'notes.json', 'dir': packets, 'out': self.root / 'fidelity-eval.json',
+                                                       'writer_model': 'gpt-6.1-sol', 'update': None, 'reviewer': 'auto',
+                                                       'reviewer_model': None, 'timeout': 60, **kw}))
+        with self.assertRaisesRegex(ValueError, 'same family'):
+            review(reviewer='codex')
+        self.assertEqual(calls, [])
+        review()
+        # A GPT writer gets the Cursor reviewer; answering waits for questions, grading for answers.
+        self.assertEqual({x[0] for x in calls}, {'cursor'})
+        self.assertEqual([x[2:] for x in calls[2:]], [('answer', 'PROMPT.md'), ('author', 'GRADE.md')])
+        usage = json.loads((packets / 'usage.json').read_text(encoding='utf-8'))
+        self.assertEqual(sorted(usage), ['answer', 'author', 'grade', 'precision'])
+        report = json.loads((self.root / 'fidelity-eval.json').read_text(encoding='utf-8'))
+        self.assertEqual((report['precision']['reviewer'], report['recall']['answerer']), ('independent_agent', 'independent_agent'))
+        self.assertEqual(self.score()[1]['status'], 'passed')
+        review()  # resumable: every output exists, nothing runs again
+        self.assertEqual(len(calls), 4)
+        # An incremental round with no stale questions re-checks precision only.
+        self.notes['sections'][1]['takeaway'] = '先核对样本与单位。'
+        self.save()
+        delta = self.root / 'delta'
+        quiet(fe.prepare, Args(notes=self.root / 'notes.json', index=self.index, out=delta, per_section=2, seed=0, questions=20,
+                               only_stale=self.root / 'fidelity-eval.json', light=False))
+        review(dir=delta, update=self.root / 'fidelity-eval.json')
+        self.assertEqual([x[2] for x in calls[4:]], ['precision'])
+        self.assertEqual(self.score()[1]['status'], 'passed')
+
     def test_ledger_decides_light_or_full(self):
         def entry(n, mode, status):
             return {'at': f'2026-10-{n:02d}', 'run': f'r{n}', 'writer_model': 'grok-4.7-high', 'skill_version': 'v1',

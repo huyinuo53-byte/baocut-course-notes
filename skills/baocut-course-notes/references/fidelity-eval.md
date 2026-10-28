@@ -43,9 +43,15 @@
 
 ```sh
 python3 <skill>/scripts/fidelity_eval.py prepare --notes <run>/notes.json --index <run>/chunks/index.json --out <run>/eval
-# 按 <run>/eval/RUN.md 用另一家模型分别运行 author/ 与 precision/ 包（可并行）
+python3 <skill>/scripts/fidelity_eval.py review --notes <run>/notes.json --dir <run>/eval --out <run>/fidelity-eval.json --writer-model <写作模型>
+```
+
+`review` 做的就是下面的手工流程：author/ 与 precision/ 并行 → `blind` → answer/ → 出题模型按 author/GRADE.md 判分 → `merge`。评审 CLI 默认选另一家（GPT 写作 → `cursor-agent` + grok-4.7-high；其他 → `codex exec` + gpt-6.1-sol，`--reviewer`/`--reviewer-model` 可改）；每个角色是一个新进程，输出缺失或不是合法 JSON 时重跑一次，仍失败就报错并给出日志路径；各角色耗时和 token 写进 `eval/usage.json`；已有输出的角色不再重跑，所以中断后直接重跑同一条命令。**为什么要做成一条命令**：2026-10-28 的 YouTube 对照里，写作模型自己拼评审命令占了 Codex 42 分钟里的约 32 分钟（绕沙箱、轮询进度、猜文件名），Cursor 那组在 merge 参数上出错，评审 token 也没记下来。
+
+只有 `review` 跑不了时才手工执行（命令见 `<run>/eval/RUN.md`）：
+
+```sh
 python3 <skill>/scripts/fidelity_eval.py blind --dir <run>/eval
-# 运行 answer/ 包；再让出题模型按 author/GRADE.md 判分
 python3 <skill>/scripts/fidelity_eval.py merge --notes <run>/notes.json --dir <run>/eval --out <run>/fidelity-eval.json \
   --writer-model <写作模型> --reviewer-model <精度评审模型> --author-model <出题模型> --answerer-model <答题模型>
 ```
@@ -60,8 +66,8 @@ python3 <skill>/scripts/fidelity_eval.py merge --notes <run>/notes.json --dir <r
 ```sh
 python3 <skill>/scripts/fidelity_eval.py stale --notes <run>/notes.json --eval <run>/fidelity-eval.json
 python3 <skill>/scripts/fidelity_eval.py prepare ... --out <run>/eval-r2 --only-stale <run>/fidelity-eval.json
-# 只跑 eval-r2/precision，并只对 stale 列出的召回题重新作答、判分
-python3 <skill>/scripts/fidelity_eval.py merge ... --dir <run>/eval-r2 --update <run>/fidelity-eval.json
+python3 <skill>/scripts/fidelity_eval.py review ... --dir <run>/eval-r2 --update <run>/fidelity-eval.json
+# review 只跑 eval-r2/precision，并只拿 stale 列出的召回题（沿用原题）重新作答、判分，然后 merge --update
 ```
 
 评分时若有过期条目，状态为 `stale` 并列出需要复核的 ref/题号；未变的判断继续有效。

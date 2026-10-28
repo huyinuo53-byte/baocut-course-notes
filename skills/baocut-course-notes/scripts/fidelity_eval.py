@@ -12,14 +12,20 @@ and arithmetic, never the semantics.
   score   --notes N --eval EVAL              (default when no subcommand is given)
           [--ledger L --skill-version V --source-type T]   also record the result in the course ledger
   mode    --ledger L --writer-model M --skill-version V --source-type T   light or full eval for the next lesson
+  review  --notes N --dir DIR --out EVAL --writer-model M [--update EVAL]
+          runs every packet in DIR with a reviewer CLI of another family, records tokens, then merges
 """
 import argparse
 import datetime as dt
 import hashlib
 import html as htmllib
+import json
 import random
 import re
+import subprocess
 import sys
+import threading
+from types import SimpleNamespace
 from pathlib import Path
 
 from course_notes import dump, read_json, safe_path, stamp, text_of, write
@@ -30,6 +36,10 @@ RECALL = {'correct': 1.0, 'partial': 0.5, 'missing': 0.0, 'wrong': 0.0}
 ROLES = ('independent_agent', 'human', 'same_agent')
 DEFAULTS = {'min_precision': 0.95, 'min_recall': 0.85, 'min_questions': 20}
 AUDIT_EVERY = 5  # in production, every 5th lesson of an approved combination gets the full eval
+REVIEWERS = {'cursor': 'grok-4.7-high', 'codex': 'gpt-6.1-sol'}  # default model per reviewer CLI
+# role -> (packet folder, prompt file, output the role must write)
+STEPS = {'precision': ('precision', 'PROMPT.md', 'precision/results.json'), 'author': ('author', 'PROMPT.md', 'author/questions.json'),
+         'answer': ('answer', 'PROMPT.md', 'answer/answers.json'), 'grade': ('author', 'GRADE.md', 'author/grades.json')}
 
 
 def is_top(ref):
@@ -412,6 +422,108 @@ def mode_cmd(args):
     print(dump(decide(entries, args.writer_model, args.skill_version, args.source_type, args.every)))
 
 
+def skill_version():
+    """Short git commit of this skill, so ledger entries need no hand-typed version."""
+    here = Path(__file__).resolve().parent
+    try:
+        out = subprocess.run(['git', '-C', str(here), 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True, timeout=10)
+        dirty = subprocess.run(['git', '-C', str(here), 'status', '--porcelain', '--', '.'], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode:
+        return None
+    return out.stdout.strip() + ('-dirty' if dirty.stdout.strip() else '')
+
+
+def reviewer_cli(writer, choice):
+    if choice != 'auto':
+        return choice
+    return 'cursor' if family(writer) == 'gpt' else 'codex'
+
+
+def run_role(cli, model, workdir, prompt_file, log, timeout):
+    """One fresh reviewer process with the packet folder as workspace; returns token usage from its event stream."""
+    prompt = f'Read {prompt_file} in this folder and follow it exactly. Write only the output file it names, in this folder.'
+    if cli == 'codex':
+        cmd = ['codex', 'exec', '--skip-git-repo-check', '-m', model, '-s', 'workspace-write', '--json', '-C', str(workdir), prompt]
+    else:
+        cmd = ['cursor-agent', '-p', '--trust', '--sandbox', 'enabled', '--model', model, '--output-format', 'stream-json',
+               '--workspace', str(workdir), prompt]
+    with open(log, 'w', encoding='utf-8') as fh:
+        subprocess.run(cmd, cwd=workdir, stdout=fh, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, timeout=timeout)
+    usage = None
+    for line in Path(log).read_text(encoding='utf-8', errors='replace').splitlines():
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(e, dict) and e.get('type') in ('turn.completed', 'result') and e.get('usage'):
+            usage = e['usage']
+    return usage
+
+
+def review(args):
+    """Run every packet that has no output yet (resumable), validate outputs, record tokens, then merge."""
+    d, notes_path = safe_path(args.dir), safe_path(args.notes)
+    cli = reviewer_cli(args.writer_model, args.reviewer)
+    model = args.reviewer_model or REVIEWERS[cli]
+    if family(model) == family(args.writer_model):
+        raise ValueError(f'{model} is the same family as the writer {args.writer_model}; pick the other CLI with --reviewer')
+    skip = set()
+    if args.update and (d / 'author/PROMPT.md').exists() and not (d / 'author/questions.json').exists():
+        # Incremental round: re-ask only the stale questions instead of authoring new ones.
+        old = read_json(args.update)
+        ids = set(stale_items(old, read_json(notes_path), notes_path.parent)[1])
+        keep = [{k: v for k, v in q.items() if k in ('id', 'question', 'expected', 'evidence', 'from')}
+                for q in (old.get('recall') or {}).get('items', []) if q['id'] in ids]
+        if keep:
+            write(d / 'author/questions.json', dump(keep) + '\n')
+        else:
+            skip = {'author', 'answer', 'grade'}
+    usage_path = d / 'usage.json'
+    usage = read_json(usage_path) if usage_path.exists() else {}
+    errors = []
+
+    def step(name):
+        folder, prompt_file, output = STEPS[name]
+        if name in skip or not (d / folder / prompt_file).exists() or (d / output).exists():
+            return
+        for attempt in (1, 2):
+            started = dt.datetime.now(dt.timezone.utc)
+            try:
+                tokens = run_role(cli, model, d / folder, prompt_file, d / folder / f'{name}.log', args.timeout)
+            except subprocess.TimeoutExpired:
+                tokens = None
+            ok = (d / output).exists()
+            if ok:
+                try:
+                    read_json(d / output)
+                except ValueError:
+                    (d / output).unlink()
+                    ok = False
+            usage[name] = {'cli': cli, 'model': model, 'attempts': attempt, 'tokens': tokens,
+                           'seconds': round((dt.datetime.now(dt.timezone.utc) - started).total_seconds())}
+            if ok:
+                return
+        errors.append(f'{name}: no valid {output} after 2 attempts; see {d / folder / (name + ".log")}')
+
+    threads = [threading.Thread(target=step, args=(n,)) for n in ('precision', 'author')]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    if (d / 'author/questions.json').exists() and (d / 'answer/PROMPT.md').exists():
+        blind(SimpleNamespace(dir=d))
+        step('answer')
+        step('grade')
+    write(usage_path, dump(usage) + '\n')
+    if errors:
+        raise ValueError('; '.join(errors))
+    recall = (d / 'author/questions.json').exists()
+    merge(SimpleNamespace(notes=notes_path, dir=d, out=args.out, update=args.update, writer_model=args.writer_model,
+                          reviewer_model=model, author_model=model if recall else None, answerer_model=model if recall else None))
+
+
 PRECISION_PROMPT = """# Precision review (packet: items.json)
 
 You check classroom notes against the lecture. You did not write them. Read only items.json and transcript.txt
@@ -467,6 +579,10 @@ RUN_MD = """# Fidelity eval with external models
 Packets: {dir}. Use a model family different from the writer's: merge records every model and downgrades
 same-family review to self_checked. Each packet is self-contained, so reviewers need no other context.
 
+Normally one command does all of the steps below:
+   python3 fidelity_eval.py review --notes {notes} --dir {dir} --out <run>/fidelity-eval.json --writer-model <writer>
+
+Manual steps, only if `review` cannot run here:
 1. In parallel, as fresh processes with the packet folder as workspace, for example:
    codex exec -m gpt-6.1-sol -s workspace-write --skip-git-repo-check -C {dir}/author "$(cat {dir}/author/PROMPT.md)"
    cursor-agent -p --force --trust --model grok-4.7-high --workspace {dir}/precision "$(cat {dir}/precision/PROMPT.md)"
@@ -481,7 +597,9 @@ delta precision packet, re-answer and re-grade only the stale recall ids, then `
 """
 LIGHT_RUN_MD = """# Light fidelity check (production)
 
-Packet: {dir}/precision. One reviewer, one run, a model family different from the writer's, for example:
+Packet: {dir}/precision. One reviewer, one run, a model family different from the writer's. Normally:
+   python3 fidelity_eval.py review --notes {notes} --dir {dir} --out <run>/fidelity-eval.json --writer-model <writer>
+Manual equivalent, for example:
    codex exec -m gpt-6.1-sol -s workspace-write --skip-git-repo-check -C {dir}/precision "$(cat {dir}/precision/PROMPT.md)"
    cursor-agent -p --force --trust --model grok-4.7-high --workspace {dir}/precision "$(cat {dir}/precision/PROMPT.md)"
 Then:
@@ -502,8 +620,8 @@ def main():
     sc = sub.add_parser('score'); sc.add_argument('--notes', required=True); sc.add_argument('--eval', required=True)
     for key, value in DEFAULTS.items():
         sc.add_argument('--' + key.replace('_', '-'), type=type(value), default=value)
-    for flag in ('--ledger', '--skill-version', '--source-type'):
-        sc.add_argument(flag)
+    sc.add_argument('--ledger'); sc.add_argument('--source-type')
+    sc.add_argument('--skill-version', default=skill_version(), help='default: git commit of this skill')
     pr = sub.add_parser('prepare'); pr.add_argument('--notes', required=True); pr.add_argument('--index', required=True)
     pr.add_argument('--out', required=True); pr.add_argument('--per-section', type=int, default=2); pr.add_argument('--seed', type=int, default=0)
     pr.add_argument('--questions', type=int, default=DEFAULTS['min_questions']); pr.add_argument('--only-stale', metavar='EVAL')
@@ -515,11 +633,16 @@ def main():
         mg.add_argument(flag)
     st = sub.add_parser('stale'); st.add_argument('--notes', required=True); st.add_argument('--eval', required=True)
     md = sub.add_parser('mode'); md.add_argument('--ledger', required=True); md.add_argument('--writer-model', required=True)
-    md.add_argument('--skill-version', required=True); md.add_argument('--source-type', required=True)
+    md.add_argument('--skill-version', default=skill_version(), help='default: git commit of this skill')
+    md.add_argument('--source-type', required=True)
     md.add_argument('--every', type=int, default=AUDIT_EVERY)
+    rv = sub.add_parser('review'); rv.add_argument('--notes', required=True); rv.add_argument('--dir', required=True)
+    rv.add_argument('--out', required=True); rv.add_argument('--writer-model', required=True); rv.add_argument('--update', metavar='EVAL')
+    rv.add_argument('--reviewer', choices=['auto', 'codex', 'cursor'], default='auto', help='auto: the CLI of the other family')
+    rv.add_argument('--reviewer-model'); rv.add_argument('--timeout', type=int, default=3600, help='seconds per reviewer process')
     args = parser.parse_args(argv)
     try:
-        code = {'score': score_cmd, 'prepare': prepare, 'blind': blind, 'merge': merge, 'stale': stale, 'mode': mode_cmd}[args.command](args)
+        code = {'score': score_cmd, 'prepare': prepare, 'blind': blind, 'merge': merge, 'stale': stale, 'mode': mode_cmd, 'review': review}[args.command](args)
         if code:
             parser.exit(code)
     except (ValueError, KeyError, OSError, TypeError) as exc:
