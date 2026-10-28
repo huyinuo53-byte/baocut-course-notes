@@ -248,8 +248,8 @@
     },
     {
       "path": "skills/baocut-course-notes/SKILL.md",
-      "bytes": 8898,
-      "sha256": "2525e524654fe091cdc3ec1e609a9e50c6e046028dc656bdb84f6b1c88368c6b"
+      "bytes": 9657,
+      "sha256": "84b2ea8a9a4482ab8c23d77c170de761bd4ddc9d460a7377769bf1dfaf3ecccb"
     },
     {
       "path": "skills/baocut-course-notes/agents/openai.yaml",
