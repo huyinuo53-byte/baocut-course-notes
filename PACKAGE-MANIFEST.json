@@ -7,6 +7,11 @@
       "sha256": "dbc8eededc1452cf0a5721e63fcb103fbfba8f0e2b0f69fec0e858b3fc7ae480"
     },
     {
+      "path": ".ship.json",
+      "bytes": 139,
+      "sha256": "81b8f9a6305eda0520dd8551323c021d766f26aaa1ace319269e31c6116e943d"
+    },
+    {
       "path": "LICENSE",
       "bytes": 1065,
       "sha256": "1877702ec5f74d4dcf1ce19b2f30702fe600309659ba8f21bb13fae4bbdf61e0"
