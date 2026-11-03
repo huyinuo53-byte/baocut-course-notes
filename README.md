@@ -79,8 +79,10 @@ python3 skills/baocut-course-notes/scripts/course_notes.py chunks --input my-run
 4. 渲染详细 HTML：
 
 ```sh
-python3 skills/baocut-course-notes/scripts/course_notes.py render --notes my-run/notes.json --index my-run/chunks/index.json --out my-run/notes.html
+python3 skills/baocut-course-notes/scripts/course_notes.py render --notes my-run/notes.json --index my-run/chunks/index.json
 ```
+
+页面写到 `my-run/<short_title>.html`：`short_title` 是视频名称的缩写，这样不同视频的文件一眼能分清。
 
 5. 用 `scripts/fidelity_eval.py prepare` 生成评审包，交给**另一家模型**做[保真评测](skills/baocut-course-notes/references/fidelity-eval.md)（精度/召回），`merge` 汇总并计分，改稿后只复核变化条目；用 `scripts/manifest.py` 记录来源、阶段、问题与冻结版本（见[可追溯运行](skills/baocut-course-notes/references/traceability.md)）。
 

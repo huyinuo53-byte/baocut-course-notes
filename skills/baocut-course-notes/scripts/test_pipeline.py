@@ -65,6 +65,26 @@ class ValidateTest(RunDir):
         with self.assertRaisesRegex(ValueError, 'takeaway'):
             quiet(c.render, Args(notes=self.save(notes), index=self.index, out=self.root / 'o.html'))
 
+    def test_render_names_the_page_after_short_title(self):
+        quiet(c.render, Args(notes=self.save(), index=self.index, out=None))
+        self.assertTrue((self.root / '测试课-第1课.html').is_file())
+
+    def test_explicit_out_still_wins(self):
+        notes = copy.deepcopy(self.notes)
+        del notes['short_title']
+        quiet(c.render, Args(notes=self.save(notes), index=self.index, out=self.root / 'o.html'))
+        self.assertTrue((self.root / 'o.html').is_file())
+
+    def test_short_title_must_abbreviate_the_video_name(self):
+        for bad in (None, '', '课堂笔记', 'x' * 31):
+            notes = copy.deepcopy(self.notes)
+            notes['short_title'] = bad
+            result, _ = quiet(c.validate, Args(notes=self.save(notes), index=self.index, layout=None))
+            self.assertIn('short_title', {p['where'] for p in result['problems']}, bad)
+
+    def test_short_title_cannot_escape_the_run_dir(self):
+        self.assertEqual(c.note_filename({'short_title': '../a/b: c'}), 'a-b-c.html')
+
     def test_valid_notes_pass(self):
         result, _ = quiet(c.validate, Args(notes=self.save(), index=self.index, layout=None))
         self.assertEqual(result['status'], 'passed', result['problems'])
