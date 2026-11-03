@@ -13,8 +13,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 10135,
-      "sha256": "2c675689ae73216fdad0538039347b7e6da42e586cd5e0d991c5b3ced789b32d"
+      "bytes": 10143,
+      "sha256": "55d6c4236e46dbea4a042b165238c38b16b1b6907649cbb80aba172666714da9"
     },
     {
       "path": "docs/agent-setup.md",
@@ -23,8 +23,8 @@
     },
     {
       "path": "docs/course-manifest.json",
-      "bytes": 1032,
-      "sha256": "dff14e3919902bb3b8c30cabb6112247e33e1363eea25cca3035f1427ec41ade"
+      "bytes": 1072,
+      "sha256": "efbdc8b0285782918b3e1ac81843fab60bdb5025ae1694bf550b5f377078427d"
     },
     {
       "path": "docs/dependencies.md",
@@ -38,8 +38,8 @@
     },
     {
       "path": "docs/page-checks.json",
-      "bytes": 4580,
-      "sha256": "d6e16fec1b55c68f5ce32fd2630fce6d73fc3c484733837a90f0aea5c37881da"
+      "bytes": 4700,
+      "sha256": "89e823828a368fcbd60e00550cc8fc09a136f3ba2d405f4083177f649f5a247d"
     },
     {
       "path": "docs/release-validation.md",
@@ -58,13 +58,13 @@
     },
     {
       "path": "examples/lecture-03-layered/README.md",
-      "bytes": 3360,
-      "sha256": "d5c261ee0bce299cf6ae65b5ff841bd001f469a649928facda9529dacee3d942"
+      "bytes": 3376,
+      "sha256": "f5ebd830dde21cd52177c4112863cca5fd4be89fe3af7c5dc6c288ff4acae36c"
     },
     {
       "path": "examples/lecture-03-layered/build.py",
-      "bytes": 12304,
-      "sha256": "427753fd72a06809e207e085e6a05254ce6a85352d8435201ad1ac8de0b53996"
+      "bytes": 12320,
+      "sha256": "81426fb43646eb0461da50cd93b9810221fdfbec9cc01eb2ebf9a0bec873ab32"
     },
     {
       "path": "examples/lecture-03-layered/layer.json",
@@ -217,34 +217,34 @@
       "sha256": "241401591b7748e04b06bf0f7bed71f821fd80554c6f8e1fb5ac6e94b00c7f32"
     },
     {
-      "path": "notes/lecture-01/课堂笔记.html",
+      "path": "notes/lecture-01/麦田美股-第1课.html",
       "bytes": 5525853,
       "sha256": "02fea432e58cc3402250a9233121d514c33c26195ec2d192ce83bb3cb1275ecd"
     },
     {
-      "path": "notes/lecture-02/课堂笔记.html",
+      "path": "notes/lecture-02/麦田美股-第2课.html",
       "bytes": 6535563,
       "sha256": "21fdb6a9e25c0cc55bc9d532aa651cfde2e18496ed93f5f7db40e55fce999ff4"
     },
     {
-      "path": "notes/lecture-03/课堂笔记.html",
+      "path": "notes/lecture-03/麦田美股-第3课.html",
       "bytes": 4049549,
       "sha256": "6a92b10649cc3168260d00ce19f366ed0466146ec4211f27cfaf22cdff7a1265"
     },
     {
-      "path": "notes/lecture-04/课堂笔记.html",
+      "path": "notes/lecture-04/麦田美股-第4课.html",
       "bytes": 4764230,
       "sha256": "6dff239a91d90e6c67b27c1fc8a6797ee0b5366e7a3fa5cc57d456ce156e3709"
     },
     {
-      "path": "notes/lecture-05/课堂笔记.html",
+      "path": "notes/lecture-05/麦田美股-第5课.html",
       "bytes": 4752116,
       "sha256": "b2c79edb240152ca03c5bf83d8ef2452f6448db10efeb90bbec74de8040e90f5"
     },
     {
       "path": "notes/课程导航.html",
-      "bytes": 7216,
-      "sha256": "bf7b7aae733a5df6413b9f2e0d476be7c570851439f03d24dc024314d8bf1231"
+      "bytes": 7296,
+      "sha256": "3f49f5a6c84dbdabfa4046c0eb70b83e30804ec6007eaa77fed11bd273c94dab"
     },
     {
       "path": "skills/baocut-course-notes/SKILL.md",
