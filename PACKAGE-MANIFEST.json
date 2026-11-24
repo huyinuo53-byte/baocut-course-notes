@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-27",
+  "generated_at": "2026-11-24",
   "files": [
     {
       "path": ".gitignore",
@@ -187,7 +187,7 @@
       "sha256": "e38092e29f2de863a4e2efad70ac40796a85c7f6137401ac3bfe5af97a96b4ad"
     },
     {
-      "path": "examples/lecture-03-layered/课堂笔记-分层样板.html",
+      "path": "examples/lecture-03-layered/\u8bfe\u5802\u7b14\u8bb0-\u5206\u5c42\u6837\u677f.html",
       "bytes": 4141223,
       "sha256": "b7168db568424ec55e065eb0280e28ac2e7ccff6a772f35a27890a780cc7cc02"
     },
@@ -222,32 +222,32 @@
       "sha256": "241401591b7748e04b06bf0f7bed71f821fd80554c6f8e1fb5ac6e94b00c7f32"
     },
     {
-      "path": "notes/lecture-01/麦田美股-第1课.html",
+      "path": "notes/lecture-01/\u9ea6\u7530\u7f8e\u80a1-\u7b2c1\u8bfe.html",
       "bytes": 5525904,
       "sha256": "1ee32fb10602a30dcf2ad5c5a69294640e4e5954c3800131a982248168f2dbce"
     },
     {
-      "path": "notes/lecture-02/麦田美股-第2课.html",
+      "path": "notes/lecture-02/\u9ea6\u7530\u7f8e\u80a1-\u7b2c2\u8bfe.html",
       "bytes": 6535620,
       "sha256": "35e6d79eb67d0821c9e98d14e07480d3085f483ce896a65072c2965279f357de"
     },
     {
-      "path": "notes/lecture-03/麦田美股-第3课.html",
+      "path": "notes/lecture-03/\u9ea6\u7530\u7f8e\u80a1-\u7b2c3\u8bfe.html",
       "bytes": 4049600,
       "sha256": "07c0f8701dfc82a48a215da60ebcec7ab58ec211e26ebcf56cf2caba7c2c8919"
     },
     {
-      "path": "notes/lecture-04/麦田美股-第4课.html",
+      "path": "notes/lecture-04/\u9ea6\u7530\u7f8e\u80a1-\u7b2c4\u8bfe.html",
       "bytes": 4764292,
       "sha256": "80080b0aa39a46e2ff84e4eab61c3d5397cbaabca6790af65e9a2e0b26532264"
     },
     {
-      "path": "notes/lecture-05/麦田美股-第5课.html",
+      "path": "notes/lecture-05/\u9ea6\u7530\u7f8e\u80a1-\u7b2c5\u8bfe.html",
       "bytes": 4752167,
       "sha256": "82a1ce178fc12b0c625a3b80cacea0f895ff61a15ae83842d2f967d27293f874"
     },
     {
-      "path": "notes/课程导航.html",
+      "path": "notes/\u8bfe\u7a0b\u5bfc\u822a.html",
       "bytes": 7296,
       "sha256": "3f49f5a6c84dbdabfa4046c0eb70b83e30804ec6007eaa77fed11bd273c94dab"
     },
@@ -308,8 +308,8 @@
     },
     {
       "path": "skills/baocut-course-notes/references/fidelity-eval.md",
-      "bytes": 10994,
-      "sha256": "91d2cf61b396fdaf3642cf4a8731a2bc9e7a4540bee148660c199db6db941b91"
+      "bytes": 12216,
+      "sha256": "531b8f92b23941d68f91438eed65b0ace4f5d585a57f656eeece8dcf14bb2724"
     },
     {
       "path": "skills/baocut-course-notes/references/layered-reading.md",
@@ -353,8 +353,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/fidelity_eval.py",
-      "bytes": 39483,
-      "sha256": "b3ea567d0bd8090901dd5676dfb981bf843cdffeecb5146ce99fd9bf8f09aa96"
+      "bytes": 43791,
+      "sha256": "a1f74b8f373ed7a58b10544b1c1f42fec5ff367d1b53c399464561a72ab0d239"
     },
     {
       "path": "skills/baocut-course-notes/scripts/frames.py",
@@ -403,8 +403,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_manifest_and_eval.py",
-      "bytes": 7494,
-      "sha256": "8edf4b20c070bcf4b60a325a20755ec01d066b0535a63b432cec0c3b0bd9d5bc"
+      "bytes": 8559,
+      "sha256": "be188cb7e0ca3af31f9da2801018ffaccea2448b3c58519c863fa9caf26e5f2b"
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_materials.py",
@@ -413,8 +413,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_pipeline.py",
-      "bytes": 23173,
-      "sha256": "852690a0991641ecfe245fe59af274ddf776bea7bcc2d73108999e5d478286ec"
+      "bytes": 26352,
+      "sha256": "bfe4753b6da475561f5e31c77f5702772448a7468645d5faffba3a5a3182dbe0"
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_reading_layout.py",
