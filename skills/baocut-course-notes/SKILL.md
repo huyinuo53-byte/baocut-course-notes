@@ -31,7 +31,8 @@ description: 把课程视频或已有转写整理成给人阅读学习的高保�
 5. **写完整笔记**。按 [数据合同 v3](references/contract.md) 填 `notes.json`：讲师观点、讲义内容、整理者说明、外部资料分字段；数字、条件、反例和讲师的不确定语气照原样保留。按节写入，读取用 `jq`/脚本取片段，不要反复整份打印 notes.json 或转写。
 6. **做图解层**。按 [分层阅读与图解](references/layered-reading.md)：每节一句 `takeaway`，为值得画的知识点做一张图解并在 `refs` 列出依据条目，再做课程地图。两种做法：
    - 手绘信息图（推荐，需生图工具）：先写 `visual.labels`（图上全部文字，取自完整笔记），`illustrate.py prompt --ref s3` 生成提示词，用生图工具出图，`illustrate.py fit` 压缩。
-   - SVG 卡片：`svgcard.py build --spec card.json --out visuals/s03.svg`；手写 SVG 用 `svgcard.py lint` 检查。
+   - 代码图解（没有生图工具或生图额度用完时）：同样先写 `visual.labels`，按 code-visuals skill 写 `visuals/draw-s03.infographic`（AntV 模板，首选）或 `visuals/draw-s03.html`（rough.js 手绘页），`illustrate.py draw --src … --out visuals/raw-s03.png` 渲染并自动核对文字，再 `illustrate.py fit`。不占生图额度，字不会写错。
+   - SVG 卡片：只在前两种都做不了时用。`svgcard.py build --spec card.json --out visuals/s03.svg`；手写 SVG 用 `svgcard.py lint` 检查。
 7. **校验并渲染**。
    `python3 <skill>/scripts/course_notes.py validate --notes <run>/notes.json --index <run>/chunks/index.json`
    一次列出全部问题和字段路径（覆盖、引用、占位符、图解、编码），改到 `passed` 再渲染：

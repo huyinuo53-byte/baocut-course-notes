@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24",
+  "generated_at": "2026-11-27",
   "files": [
     {
       "path": ".gitignore",
@@ -8,8 +8,8 @@
     },
     {
       "path": ".ship.json",
-      "bytes": 139,
-      "sha256": "81b8f9a6305eda0520dd8551323c021d766f26aaa1ace319269e31c6116e943d"
+      "bytes": 222,
+      "sha256": "2afb8947a5c6de1444984fe72ed495171d19172e4111da9bff863ae06f027080"
     },
     {
       "path": "LICENSE",
@@ -18,8 +18,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 10143,
-      "sha256": "55d6c4236e46dbea4a042b165238c38b16b1b6907649cbb80aba172666714da9"
+      "bytes": 10604,
+      "sha256": "acffd3e843f13053cd1cbe49e88d6c3746d43912d9eea012b9ce55eb2f993f44"
     },
     {
       "path": "docs/agent-setup.md",
@@ -253,8 +253,8 @@
     },
     {
       "path": "skills/baocut-course-notes/SKILL.md",
-      "bytes": 13052,
-      "sha256": "23f908b7fa93610359e64984a341f22281d9379b1224e9468e8b45f531a04ade"
+      "bytes": 13477,
+      "sha256": "671df62ceba8658990220bba16e3bbd730bbbc79b508d764150f3ebd97f0dd35"
     },
     {
       "path": "skills/baocut-course-notes/agents/openai.yaml",
@@ -313,8 +313,8 @@
     },
     {
       "path": "skills/baocut-course-notes/references/layered-reading.md",
-      "bytes": 5527,
-      "sha256": "44805f3058c28613e60d736f0944d1c1946e85348e9e37f4509ca3ddc3dca44d"
+      "bytes": 6820,
+      "sha256": "e916cbf086ca4a8eee39d4c7876012acdf146bec41c6a4ef27a74d198b690d62"
     },
     {
       "path": "skills/baocut-course-notes/references/lessons.json",
@@ -363,8 +363,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/illustrate.py",
-      "bytes": 4694,
-      "sha256": "7be0d5c9e45173bd9743d70b525eee1f46c3818e2e6ddfdca7d165194c59765f"
+      "bytes": 7029,
+      "sha256": "3af65dd0bdd85139a4e388c1f8aff567b8f31ba5e54bdc58728623c71e4f716c"
     },
     {
       "path": "skills/baocut-course-notes/scripts/layered.py",
@@ -413,8 +413,8 @@
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_pipeline.py",
-      "bytes": 26352,
-      "sha256": "bfe4753b6da475561f5e31c77f5702772448a7468645d5faffba3a5a3182dbe0"
+      "bytes": 27957,
+      "sha256": "e62eb4b2b53a5054c35044061554a41aa564988057cecbb6188f2341cbed7544"
     },
     {
       "path": "skills/baocut-course-notes/scripts/test_reading_layout.py",
@@ -445,6 +445,61 @@
       "path": "skills/baocut-course-notes/scripts/validate_reading_layout.py",
       "bytes": 774,
       "sha256": "299dfb32ca01f1ce84ee909d66a3d00d905a4c79d319c042a0534975571bcc30"
+    },
+    {
+      "path": "skills/code-visuals/SKILL.md",
+      "bytes": 4244,
+      "sha256": "f2e02988799e74333e99a2953fe85a0447b86a635a048f65135ce8e0d5aa1991"
+    },
+    {
+      "path": "skills/code-visuals/assets/antv-infographic.LICENSE",
+      "bytes": 1061,
+      "sha256": "cacec99fa5f02241b33906689924718962f4991cd6eada3624f56c6bd4f3ff28"
+    },
+    {
+      "path": "skills/code-visuals/assets/antv-infographic.min.js",
+      "bytes": 877959,
+      "sha256": "2890e658d6018b9ab385b4da9775b917a99e113ea333c59f03e538290e302b13"
+    },
+    {
+      "path": "skills/code-visuals/assets/antv.html",
+      "bytes": 705,
+      "sha256": "4d2ed08bb29688d3a4c071c269d7d42046bed9bb86fd05f722db893b52d3cf87"
+    },
+    {
+      "path": "skills/code-visuals/assets/freeform.html",
+      "bytes": 3643,
+      "sha256": "fb191ba51e64fc9f575a321144b0798ae7b4f5f82b6de8f409b434c196ef66a7"
+    },
+    {
+      "path": "skills/code-visuals/assets/kit.js",
+      "bytes": 9817,
+      "sha256": "dd9c8d61e3467a427a0d630805e069b8363b679afa8733f5087116ae9e53d5f5"
+    },
+    {
+      "path": "skills/code-visuals/assets/rough.LICENSE",
+      "bytes": 1068,
+      "sha256": "dca9a392272606ac748ac0976a2a1133f14eef841c27beaa51a844d53c56a09d"
+    },
+    {
+      "path": "skills/code-visuals/assets/rough.js",
+      "bytes": 27762,
+      "sha256": "6853af8619532f3939b156cd16824d2e14f31e71d3df306ad5558eeafacab194"
+    },
+    {
+      "path": "skills/code-visuals/references/antv.md",
+      "bytes": 4664,
+      "sha256": "7e5aae88e96cc39514d7431ba6157fc56dc5fe6aff401a726e78b69f69ade95b"
+    },
+    {
+      "path": "skills/code-visuals/scripts/render.py",
+      "bytes": 6182,
+      "sha256": "c1a5b6a3d07f5348f1ecbb329f39a6cb110858d18d735dd6c538bdf1c8bd8d57"
+    },
+    {
+      "path": "skills/code-visuals/scripts/test_render.py",
+      "bytes": 2265,
+      "sha256": "c772b372e90c98f423dc0001b140238dedea43a2abdeea9155551d9e0d152962"
     },
     {
       "path": "tools/install_skill.py",

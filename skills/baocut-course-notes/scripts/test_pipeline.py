@@ -404,6 +404,26 @@ class EvalPipelineTest(RunDir):
         self.assertNotEqual(out.returncode, 0)
         self.assertIn('labels', out.stderr)
 
+    @unittest.skipUnless(any(Path(x).exists() or shutil.which(x) for x in
+                             ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', 'google-chrome', 'chromium']), 'needs Chrome')
+    def test_code_drawn_explainer_rejects_words_outside_labels(self):
+        notes = copy.deepcopy(self.notes)
+        notes['sections'][0]['visual'] = {'path': 'visuals/s01.jpg', 'alt': '均分', 'refs': ['p0'], 'labels': ['平均数', '总量 ÷ 样本数']}
+        self.save(notes)
+        (self.root / 'visuals').mkdir(exist_ok=True)
+        page = ('<html><head></head><body><div class="t" style="font-size:60px">平均数</div>'
+                '<div id="x" style="font-size:40px;margin:80px">{}</div><script>window.paint=k=>k.box("#x")</script></body></html>')
+        cmd = [sys.executable, '-B', str(HERE / 'illustrate.py'), 'draw', '--notes', str(self.root / 'notes.json'), '--ref', 's1',
+               '--src', str(self.root / 'visuals' / 'draw-s01.html'), '--out', str(self.root / 'visuals' / 'raw-s01.png')]
+        c.write(self.root / 'visuals' / 'draw-s01.html', page.format('总量 ÷ 样本数'))
+        ok = subprocess.run(cmd, capture_output=True, text=True)
+        self.assertEqual(ok.returncode, 0, ok.stderr + ok.stdout)
+        self.assertTrue((self.root / 'visuals' / 'raw-s01.png').exists())
+        c.write(self.root / 'visuals' / 'draw-s01.html', page.format('总量除以样本数'))
+        bad = subprocess.run(cmd, capture_output=True, text=True)
+        self.assertNotEqual(bad.returncode, 0)
+        self.assertIn('总量除以样本数', bad.stdout)
+
 
 if __name__ == '__main__':
     unittest.main()

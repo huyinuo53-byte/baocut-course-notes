@@ -41,7 +41,9 @@ python3 tools/install_skill.py
 python3 tools/install_skill.py --dest ~/.codex/skills/baocut-course-notes
 ```
 
-也可以手动把整个 `skills/baocut-course-notes` 文件夹放入 Agent 支持的 Skill 目录，保留其中相对结构。不要只复制 SKILL.md。本轮只在隔离临时目录验证安装和拒绝覆盖，未修改本机现有 Agent 安装。
+也可以手动把整个 `skills/baocut-course-notes` 文件夹放入 Agent 支持的 Skill 目录，保留其中相对结构。不要只复制 SKILL.md。
+
+图解备选：`skills/code-visuals` 是独立的第二个 Skill，让只会输出文字的模型也能画出图解：写 AntV Infographic 语法或 HTML+rough.js，由本机无头 Chrome 渲染，并自动核对图上文字。没有生图工具或生图额度用完时，`illustrate.py draw` 会调用它。把它放在 `baocut-course-notes` 旁边的同一个 Skill 目录（例如 `~/.agents/skills/code-visuals`），需要本机有 Chrome 或 Chromium。本轮只在隔离临时目录验证安装和拒绝覆盖，未修改本机现有 Agent 安装。
 
 ## 如何调用
 
